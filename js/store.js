@@ -97,6 +97,9 @@
       enrolled: null,     // { programId, start, days: [weekday…], done: [sessionIndex…], logs: {index: logId} }
       programHistory: [], // finished programs
     },
+    cloud: {              // never synced or exported: your own sync server + the key for this browser
+      url: '', key: '', on: true, version: 0, synced: {}, lastSync: 0,
+    },
     google: {             // never synced or exported: credentials for this browser only
       clientId: '', clientSecret: '', accessToken: '', refreshToken: '', expiresAt: 0, email: '',
       calendars: [], calendarOn: true, syncOn: true, fileId: '', synced: {}, lastSync: 0,
@@ -147,14 +150,14 @@
     Object.keys(DEFAULTS).forEach((k) => { out[k] = get(k); });
     // Never put Strava or Google credentials in a backup file.
     out.strava = { ...out.strava, clientSecret: '', accessToken: '', refreshToken: '', expiresAt: 0 };
-    delete out.google; delete out.spotify;
+    delete out.google; delete out.spotify; delete out.cloud;
     return JSON.stringify(out, null, 2);
   }
   function importAll(json) {
     const data = JSON.parse(json);
     if (data.app !== 'personal-dashboard') throw new Error('Not a dashboard backup file');
     Object.keys(DEFAULTS).forEach((k) => {
-      if (!data[k] || k === 'google' || k === 'spotify') return;
+      if (!data[k] || k === 'google' || k === 'spotify' || k === 'cloud') return;
       if (k === 'strava') set(k, { ...get('strava'), ...data[k], clientSecret: get('strava').clientSecret, accessToken: get('strava').accessToken, refreshToken: get('strava').refreshToken, expiresAt: get('strava').expiresAt });
       else set(k, data[k]);
     });

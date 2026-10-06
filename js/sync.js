@@ -1,5 +1,5 @@
-/* Sync between devices through a private file in your Google Drive "app data" folder
-   (hidden from your normal Drive and only readable by this app with your Google login).
+/* Sync between devices — through your own free sync server (Cloudflare Worker, end-to-end
+   encrypted; see js/cloud.js) or, as a fallback, a private file in your Google Drive "app data" folder.
    Each data key carries a last-modified time; when both devices changed the same key since the
    last sync, the two versions are merged (lists by id, dated records by date) so nothing is lost. */
 (function (PD) {
@@ -68,29 +68,53 @@
 
   const device = () => (/iphone|ipad/i.test(navigator.userAgent) ? 'iPhone' : /android/i.test(navigator.userAgent) ? 'Android' : /mac/i.test(navigator.userAgent) ? 'Mac' : /win/i.test(navigator.userAgent) ? 'Windows' : 'Browser');
 
+  /* ---------- backends: your own server first, Google Drive as fallback ---------- */
+  const cloudOn = () => PD.cloud?.configured() && store.get('cloud').on !== false;
+  const driveOn = () => PD.google.connected() && G().syncOn !== false;
+  const BACKENDS = {
+    cloud: {
+      meta: () => store.get('cloud'), saveMeta: () => store.save('cloud'),
+      read: () => PD.cloud.read(),
+      write: (doc, version) => PD.cloud.write(doc, version),
+    },
+    drive: {
+      meta: () => G(), saveMeta: () => store.save('google'),
+      read: async () => { const id = await findFile(); return { version: id, doc: await readRemote(id) }; },
+      write: async (doc, id) => { await writeRemote(id, doc); return id; },
+    },
+  };
+  const active = () => (cloudOn() ? 'cloud' : driveOn() ? 'drive' : null);
+
   /* ---------- sync ---------- */
   async function run() {
-    const g = G();
-    const id = await findFile();
-    const remote = (await readRemote(id)) || { app: 'personal-dashboard', version: 1, keys: {} };
-    remote.keys = remote.keys || {};
-    let push = false; const pulled = [];
-    KEYS.forEach((k) => {
-      const L = store.modified(k); const R = remote.keys[k]?.t || 0; const last = g.synced[k] || 0;
-      const localChanged = L > last; const remoteChanged = R > last;
-      if (remoteChanged && !localChanged) {
-        store.setFromSync(k, remote.keys[k].v, R); g.synced[k] = R; pulled.push(k);
-      } else if (localChanged && !remoteChanged) {
-        remote.keys[k] = { t: L, v: store.get(k) }; g.synced[k] = L; push = true;
-      } else if (localChanged && remoteChanged) {
-        const merged = merge(store.get(k), remote.keys[k].v, R > L);
-        const t = Date.now();
-        store.setFromSync(k, merged, t); remote.keys[k] = { t, v: merged }; g.synced[k] = t; push = true; pulled.push(k);
+    const B = BACKENDS[active()]; const m = B.meta(); m.synced = m.synced || {};
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const { version, doc } = await B.read();
+      const remote = doc || { app: 'personal-dashboard', version: 1, keys: {} };
+      remote.keys = remote.keys || {};
+      // work out what to pull and push first; only touch local data once the write succeeded
+      const pulls = []; const synced = {}; let push = false;
+      KEYS.forEach((k) => {
+        const L = store.modified(k); const R = remote.keys[k]?.t || 0; const last = m.synced[k] || 0;
+        const localChanged = L > last; const remoteChanged = R > last;
+        if (remoteChanged && !localChanged) {
+          pulls.push([k, remote.keys[k].v, R]); synced[k] = R;
+        } else if (localChanged && !remoteChanged) {
+          remote.keys[k] = { t: L, v: store.get(k) }; synced[k] = L; push = true;
+        } else if (localChanged && remoteChanged) {
+          const merged = merge(store.get(k), remote.keys[k].v, R > L); const t = Date.now();
+          pulls.push([k, merged, t]); remote.keys[k] = { t, v: merged }; synced[k] = t; push = true;
+        }
+      });
+      if (push) {
+        remote.updated = new Date().toISOString(); remote.device = device();
+        try { m.version = await B.write(remote, version); } catch (e) { if (e.conflict) continue; throw e; } // another device wrote first: read again
       }
-    });
-    if (push) { remote.updated = new Date().toISOString(); remote.device = device(); await writeRemote(id, remote); }
-    g.lastSync = Date.now(); store.save('google');
-    return pulled;
+      pulls.forEach(([k, v, t]) => store.setFromSync(k, v, t));
+      Object.assign(m.synced, synced); m.lastSync = Date.now(); B.saveMeta();
+      return pulls.map(([k]) => k);
+    }
+    throw new Error('Too many devices syncing at once — will retry');
   }
 
   async function now() {
@@ -112,7 +136,8 @@
     PD.app.renderCurrent();
   }
 
-  const enabled = () => PD.google.connected() && G().syncOn !== false;
+  const enabled = () => !!active();
+  const meta = () => (active() ? BACKENDS[active()].meta() : {});
 
   function setState(s) {
     state = s;
@@ -120,23 +145,24 @@
     if (!b) return;
     b.hidden = s === 'off';
     b.dataset.state = s;
-    const when = G().lastSync ? PD.fmt.ago(G().lastSync) : 'never';
-    b.title = s === 'error' ? `Sync problem: ${lastError} — click to retry` : s === 'busy' ? 'Syncing…' : `Synced ${when} — click to sync now`;
+    const when = meta().lastSync ? PD.fmt.ago(meta().lastSync) : 'never';
+    const via = active() === 'cloud' ? 'your sync server' : 'Google Drive';
+    b.title = s === 'error' ? `Sync problem: ${lastError} — click to retry` : s === 'busy' ? 'Syncing…' : `Synced with ${via} ${when} — click to sync now`;
   }
 
   // sync shortly after local edits, when coming back to the app, and every 5 minutes
   const soon = PD.debounce(() => now(), 3000);
   store.onChange((key, opts) => { if (KEYS.includes(key) && !opts?.fromSync && enabled()) soon(); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && enabled() && Date.now() - G().lastSync > 60e3) now(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && enabled() && Date.now() - (meta().lastSync || 0) > 60e3) now(); });
   window.addEventListener('online', () => enabled() && now());
   setInterval(() => { if (enabled() && !document.hidden) now(); }, 5 * 60e3);
 
   function init() {
     const b = document.getElementById('syncBtn');
-    if (b) b.onclick = () => { if (state === 'error' && /reconnect|Not connected/i.test(lastError)) PD.settings.open('google'); else now(); };
+    if (b) b.onclick = () => { if (state === 'error' && /reconnect|Not connected|sync key|reach/i.test(lastError)) PD.settings.open(active() === 'cloud' ? 'sync' : 'google'); else now(); };
     setState(enabled() ? 'ok' : 'off');
     if (enabled()) now();
   }
 
-  PD.sync = { now, init, merge, state: () => state, lastError: () => lastError, KEYS };
+  PD.sync = { now, init, merge, state: () => state, lastError: () => lastError, active, KEYS };
 })(window.PD);

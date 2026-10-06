@@ -62,6 +62,11 @@
   /* ---------- engine ---------- */
   let ui = null; let i = 0; let busy = false; let pos = null;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  /** Wait until (smooth) scrolling has stopped, so positions are measured in the right place. */
+  async function settle(max = 1500) {
+    let last = -1; let still = 0; const t0 = Date.now();
+    while (Date.now() - t0 < max && still < 3) { await sleep(60); const y = scrollY; still = y === last ? still + 1 : 0; last = y; }
+  }
   const reduce = () => PD.fx.reduce();
 
   function build() {
@@ -93,12 +98,15 @@
     let spot = null; let x; let y;
     if (el) {
       const r = el.getBoundingClientRect(); const pad = 8;
-      spot = { left: Math.max(4, r.left - pad), top: Math.max(4, r.top - pad), width: Math.min(W - 8, r.width + pad * 2), height: Math.min(H - 8, r.height + pad * 2) };
+      // only the visible part of the target
+      const top = Math.max(4, r.top - pad); const bottom = Math.min(H - 4, r.bottom + pad);
+      spot = { left: Math.max(4, r.left - pad), top, width: Math.min(W - 8, r.width + pad * 2), height: Math.max(0, bottom - top) };
       x = Math.min(Math.max(12, r.left + r.width / 2 - gw / 2), W - gw - 12);
       const below = r.bottom + 12; const above = r.top - gh - 12;
       if (below + gh <= H) y = below; else if (above >= 0) y = above;
       else { y = H - gh - 12; x = r.left + r.width / 2 > W / 2 ? 12 : W - gw - 12; } // big target: stand beside it
     } else { x = (W - gw) / 2; y = Math.max(12, (H - gh) / 2); }
+    y = Math.min(Math.max(12, y), Math.max(12, H - gh - 12)); // never off-screen
     return { spot, x, y, gw };
   }
 
@@ -127,7 +135,7 @@
     const el = target(s);
     if (el && s.el !== '.tabs' && s.el !== '#openSettings' && s.el !== '.mole-btn') {
       el.scrollIntoView({ block: el.offsetHeight > innerHeight * 0.6 ? 'start' : 'center', behavior: reduce() ? 'auto' : 'smooth' });
-      await sleep(reduce() ? 50 : 350);
+      await settle();
     }
     const g = $('.tour-guide', ui); const est = $('.tour-ester', ui); const b = $('.tour-bubble', ui);
     bubble(s); // render first so the guide's height is known

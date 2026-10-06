@@ -110,7 +110,7 @@ Pick *Seasonal (auto)* in *Settings → Colour scheme* to follow the seasons (au
 
 ## Updates
 
-*Settings → Phone app* shows the **app version** (now v14) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
+*Settings → Phone app* shows the **app version** (now v15) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
 
 ## Install it as an app on your phone
 
@@ -121,16 +121,38 @@ Open the dashboard's https address on your phone, then:
 
 It then opens full-screen with a bottom tab bar, has its own icon and shortcuts, and works offline (weather/news need a connection).
 
-## Google Calendar + sync between laptop and phone
+## Sync between laptop, phone and the app (your own free server)
 
-One Google connection gives you both:
+All your data lives in each browser's local storage, so the dashboard works offline and is fast. To keep every device the same, connect them to **your own sync server** — a tiny Cloudflare Worker with a D1 database (code in [`sync-server/worker.js`](sync-server/worker.js)). It's free (100,000 requests a day and 5 GB of storage; you'll use a tiny fraction), it doesn't pause when unused, and it doesn't use your Google storage.
+
+- **End-to-end encrypted.** Before anything leaves your device it is compressed and encrypted (AES-GCM 256) with a key derived from your **sync key**. The server — and Cloudflare — only ever see unreadable data. The server gets a hash of a hash of your key to know which data is yours; the key itself never leaves your devices and never goes into backup files.
+- **Merges, never overwrites.** Each part of your data has a last-changed time. If two devices changed the same thing, the versions are merged (lists by id) — and the server only accepts a write if nobody else wrote in between, so simultaneous edits on two devices both survive.
+- **When:** a few seconds after a change, when you reopen the app, when you come back online and every 5 minutes. The ☁ icon in the top bar shows the status.
+- Strava, Google, Spotify and sync credentials stay on each device.
+
+**One-time setup (about 10 minutes, free; the same steps are in *Settings → Sync between devices*):**
+
+1. Create a free account at [dash.cloudflare.com](https://dash.cloudflare.com/sign-up).
+2. **Storage & Databases → D1 SQL Database → Create**, name it `dashboard-sync`.
+3. **Workers & Pages → Create → Start with Hello World**, name it `dashboard-sync`, **Deploy**.
+4. **Edit code**, replace everything with [`sync-server/worker.js`](sync-server/worker.js) (Settings has a *copy code* button) and **Deploy**.
+5. In the Worker: **Bindings → Add binding → D1 database**, variable name `DB`, database `dashboard-sync`.
+6. Optional, under **Settings → Variables**: `ALLOWED_ORIGINS` = your dashboard's address (e.g. `https://stefke20.github.io`) and `MAX_ACCOUNTS` (default 3 sync keys — stops strangers from filling your database).
+7. In the dashboard: *Settings → Sync between devices* → paste the Worker address (`https://dashboard-sync.<you>.workers.dev`), press **New key**, then **Connect**. Keep the key somewhere safe (password manager) — without it the encrypted data can't be read.
+8. Press **📱 Copy setup link for another device** and open that link on your phone (or the installed app): it connects automatically. The link contains your key in the part after `#`, which browsers never send to any server — still, keep it private.
+
+Prefer the command line? `cd sync-server && npx wrangler d1 create dashboard-sync`, put the id in `wrangler.toml`, then `npx wrangler deploy`.
+
+### Google Calendar (+ Drive sync as a fallback)
+
+One Google connection gives you:
 
 - your **Google Calendar** events and birthdays in the Calendar tab and under "Up next";
-- **sync**: everything you log (food, workouts, programmes, health, tasks, events, settings) is kept in a private, hidden *app data* file in **your own Google Drive**. Only this app with your login can read it. Changes sync a few seconds after you make them, when you reopen the app, and every 5 minutes. If both devices changed the same thing, the versions are merged so nothing gets lost.
+- optional **sync via a hidden file in your Google Drive** — only used when no sync server (above) is connected.
 
 Strava, Google and Spotify credentials are never synced — connect each device once.
 
-One-time setup (about 5 minutes; the same steps are in *Settings → Google Calendar & sync*):
+Google one-time setup (about 5 minutes; the same steps are in *Settings → Google Calendar & sync*):
 
 1. Create a project in the [Google Cloud Console](https://console.cloud.google.com/projectcreate).
 2. Enable the **Google Calendar API** and the **Google Drive API**.

@@ -58,7 +58,7 @@
   });
 
   // Finishes a Strava or Google login redirect if there is one (each rewrites the URL synchronously first).
-  const redirects = [PD.health.handleRedirect(), PD.google.handleRedirect(), PD.spotify.handleRedirect()];
+  const redirects = [PD.health.handleRedirect(), PD.google.handleRedirect(), PD.spotify.handleRedirect(), PD.cloud.fromLink()];
   route();
   Promise.all(redirects).then((handled) => { if (handled.some(Boolean)) route(); });
   PD.sync.init();
@@ -89,7 +89,7 @@
   if (standalone()) document.documentElement.classList.add('standalone');
 
   PD.pwa = {
-    version: 'v14', // keep in sync with VERSION in sw.js
+    version: 'v15', // keep in sync with VERSION in sw.js
     /** Ask the service worker for a fresh copy of the app, then reload. */
     async update() {
       try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch { /* offline */ }

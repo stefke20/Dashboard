@@ -93,6 +93,70 @@
       <div class="row gap wrap app-ver"><span class="muted small grow">App version <b>${PD.pwa.version}</b> — compare with the latest update to check you're up to date.</span><button type="button" class="btn sm ghost" id="checkUpdate">↻ Check for update</button><button type="button" class="btn sm ghost" id="tourAgain">🧭 Take the tour</button></div>`;
   }
 
+  /* ---------- Sync between devices (your own free server) ---------- */
+  function syncSection() {
+    const c = store.get('cloud');
+    const on = PD.cloud.configured();
+    return `<h3 class="sub" id="syncSettings">Sync between devices</h3>
+      ${on ? `
+        <div class="g-status"><span class="pill mint">Connected</span> <b class="ellipsis">${esc(c.url.replace(/^https?:\/\//, ''))}</b>
+          <span class="muted small">${c.lastSync ? `last synced ${PD.fmt.ago(c.lastSync)}` : 'not synced yet'}</span>
+          <span class="spacer"></span><button type="button" class="btn sm ghost" id="cSync">Sync now</button><button type="button" class="btn sm ghost danger" id="cOff">Disconnect</button></div>
+        <p class="small">🔒 End-to-end encrypted: your data is locked with your sync key before it leaves this device.</p>
+        <div class="row gap wrap"><button type="button" class="btn sm" id="cLink">📱 Copy setup link for another device</button><button type="button" class="btn sm ghost" id="cShow">Show sync key</button></div>
+        <p class="muted small" id="cKeyOut" hidden></p>
+        ${PD.sync.state() === 'error' && PD.sync.active() === 'cloud' ? `<p class="warn-note small">Sync problem: ${esc(PD.sync.lastError())}</p>` : ''}`
+      : `<p class="small">Keep everything the same on your laptop, phone and the app with your <b>own free sync server</b> on Cloudflare. It's end-to-end encrypted — not even Cloudflare can read your data — and it doesn't use your Google storage.</p>
+        <details class="calc"><summary>One-time setup on Cloudflare (about 10 minutes, free)</summary>
+          <ol class="steps small">
+            <li>Create a free account at <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com</a>.</li>
+            <li>Go to <b>Storage &amp; Databases → D1 SQL Database → Create</b> and name it <code>dashboard-sync</code>.</li>
+            <li>Go to <b>Compute (Workers) → Workers &amp; Pages → Create → Start with Hello World</b>, name it <code>dashboard-sync</code> and press <b>Deploy</b>.</li>
+            <li>Press <b>Edit code</b>, replace everything with the sync server code <button type="button" class="link small" id="cCode">(copy code)</button> and press <b>Deploy</b>.</li>
+            <li>In the Worker: <b>Bindings → Add binding → D1 database</b>, variable name <code>DB</code>, database <code>dashboard-sync</code>.</li>
+            <li>Copy the Worker's address (like <code>https://dashboard-sync.yourname.workers.dev</code>), paste it below, press <b>New key</b> and <b>Connect</b>. Save the key somewhere safe (e.g. your password manager).</li>
+            <li>On your phone: tap <b>📱 Copy setup link</b> here after connecting, and open that link on the phone — done.</li>
+          </ol>
+        </details>
+        <div class="row gap wrap">
+          <label class="grow">Server address<input name="cUrl" value="${esc(c.url)}" autocomplete="off" placeholder="https://dashboard-sync.….workers.dev" inputmode="url"></label>
+          <label class="grow">Sync key<span class="row gap"><input name="cKey" value="" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-…"><button type="button" class="btn sm ghost" id="cNew">New key</button></span></label>
+        </div>
+        <p class="muted small">Already set up on another device? Use the same address and key, or open the setup link from that device.</p>
+        <button type="button" class="btn" id="cConnect">Connect</button>`}`;
+  }
+
+  function bindSync(body, close) {
+    const $b = (sel) => $(sel, body);
+    const cNew = $b('#cNew'); if (cNew) cNew.onclick = () => { body.querySelector('[name=cKey]').value = PD.cloud.newKey(); };
+    const code = $b('#cCode');
+    if (code) code.onclick = async () => {
+      try { const txt = await (await fetch('sync-server/worker.js', { cache: 'no-store' })).text(); await navigator.clipboard.writeText(txt); PD.toast('Sync server code copied 📋'); }
+      catch { window.open('sync-server/worker.js', '_blank'); }
+    };
+    const connect = $b('#cConnect');
+    if (connect) connect.onclick = async () => {
+      connect.disabled = true; connect.textContent = 'Connecting…';
+      try {
+        const msg = await PD.cloud.connect(body.querySelector('[name=cUrl]').value, body.querySelector('[name=cKey]').value);
+        PD.toast(msg); PD.sync.init(); await PD.sync.now(); close(); open('sync');
+      } catch (e) { PD.toast(e.message); connect.disabled = false; connect.textContent = 'Connect'; }
+    };
+    const cs = $b('#cSync'); if (cs) cs.onclick = async () => { cs.disabled = true; await PD.sync.now(); close(); open('sync'); };
+    const off = $b('#cOff');
+    if (off) off.onclick = () => {
+      if (!confirm('Disconnect this device from your sync server? Your data stays on this device and on the server.')) return;
+      PD.cloud.disconnect(); PD.sync.init(); close(); open('sync');
+    };
+    const link = $b('#cLink');
+    if (link) link.onclick = async () => {
+      const url = PD.cloud.setupLink();
+      try { if (navigator.share && /iphone|ipad|android/i.test(navigator.userAgent)) await navigator.share({ title: 'Daily sync setup', url }); else { await navigator.clipboard.writeText(url); PD.toast('Setup link copied — open it on your other device (it contains your key, keep it private)'); } }
+      catch { prompt('Open this link on your other device (it contains your key — keep it private):', url); }
+    };
+    const show = $b('#cShow'); if (show) show.onclick = () => { const o = $b('#cKeyOut'); o.hidden = !o.hidden; o.innerHTML = `Sync key: <code>${esc(store.get('cloud').key)}</code>`; };
+  }
+
   function googleSection() {
     const g = store.get('google');
     const on = PD.google.connected();
@@ -102,7 +166,7 @@
         <div class="g-status"><span class="pill mint">Connected</span> <b>${esc(g.email || 'Google account')}</b>
           <span class="muted small">${g.lastSync ? `last synced ${PD.fmt.ago(g.lastSync)}` : ''}</span>
           <span class="spacer"></span><button type="button" class="btn sm ghost" id="gSync">Sync now</button><button type="button" class="btn sm ghost danger" id="gOff">Disconnect</button></div>
-        <label class="toggle"><input type="checkbox" name="syncOn" ${g.syncOn !== false ? 'checked' : ''}> Sync my data between devices (private file in your Google Drive)</label>
+        <label class="toggle"><input type="checkbox" name="syncOn" ${g.syncOn !== false ? 'checked' : ''}> Sync my data between devices via Google Drive (only used when no sync server is connected above)</label>
         <label class="toggle"><input type="checkbox" name="calendarOn" ${g.calendarOn !== false ? 'checked' : ''}> Show Google Calendar events</label>
         <div class="cal-list">${(g.calendars || []).map((c) => `<label class="toggle small"><input type="checkbox" data-gcal="${esc(c.id)}" ${c.enabled ? 'checked' : ''}><i class="dot g" style="--ev:${esc(c.color)}"></i>${esc(c.name)}</label>`).join('') || '<span class="muted small">No calendars found.</span>'}
           <button type="button" class="link small" id="gReload">Refresh calendar list</button></div>
@@ -207,13 +271,14 @@
           <button type="button" class="btn ghost" id="feedAdd">Add feed</button>
         </div>
 
+        ${syncSection()}
         ${googleSection()}
         ${spotifySection()}
         ${remindersSection()}
         ${appSection()}
 
         <h3 class="sub">Your data</h3>
-        <p class="muted small">Everything is stored locally in this browser. Make a backup now and then, or to move to another device.</p>
+        <p class="muted small">Everything is stored in this browser${PD.cloud.configured() ? ' and synced (encrypted) to your own server' : ''}. A backup file now and then never hurts.</p>
         <div class="row gap wrap">
           <button type="button" class="btn ghost" id="backup">⬇ Download backup</button>
           <label class="btn ghost">⬆ Restore backup<input type="file" id="restore" accept="application/json,.json" hidden></label>
@@ -222,8 +287,8 @@
         <div class="row gap end"><button class="btn" type="submit">Done</button></div>
       </form>`, (body, close) => {
       const f = $('#setForm', body);
-      bindGoogle(body, close); bindSpotify(body, close);
-      if (section === 'google' || section === 'spotify') setTimeout(() => $(section === 'google' ? '#googleSettings' : '#spotifySettings', body)?.scrollIntoView({ block: 'start' }), 50);
+      bindGoogle(body, close); bindSpotify(body, close); bindSync(body, close);
+      if (['google', 'spotify', 'sync'].includes(section)) setTimeout(() => $(`#${section}Settings`, body)?.scrollIntoView({ block: 'start' }), 50);
       let loc = s.location;
       const prevPalette = s.palette; const prevTheme = s.theme; let saved = false;
       // live preview while picking

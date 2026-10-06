@@ -1,0 +1,16 @@
+# Optional: deploy from the command line instead of the Cloudflare dashboard.
+#   npx wrangler login
+#   npx wrangler d1 create dashboard-sync      # copy the database_id it prints into the line below
+#   npx wrangler deploy
+name = "dashboard-sync"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dashboard-sync"
+database_id = "PASTE-YOUR-DATABASE-ID-HERE"
+
+[vars]
+MAX_ACCOUNTS = "3"
+# ALLOWED_ORIGINS = "https://stefke20.github.io"

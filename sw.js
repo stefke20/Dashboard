@@ -1,13 +1,13 @@
 /* Service worker: makes the dashboard installable and usable offline.
    App files are fetched network-first (so updates always arrive together) and fall back to the cache offline.
    Cross-origin APIs (weather, news, Google, Strava…) always go to the network. */
-const VERSION = 'v14';
+const VERSION = 'v15';
 const CACHE = `daily-${VERSION}`;
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/util.js', './js/store.js', './js/fx.js', './js/charts.js', './js/exercises.js', './js/foods.js',
   './js/home.js', './js/health.js', './js/calendar.js', './js/diet.js', './js/workout.js', './js/programs.js', './js/random.js', './js/tour.js',
-  './js/google.js', './js/sync.js', './js/air.js', './js/scanner.js', './js/habits.js', './js/focus.js', './js/daily.js',
+  './js/google.js', './js/cloud.js', './js/sync.js', './js/air.js', './js/scanner.js', './js/habits.js', './js/focus.js', './js/daily.js',
   './js/fasting.js', './js/board.js', './js/game.js', './js/rewards.js', './js/spotify.js', './js/seasons.js', './js/review.js', './js/reminders.js', './js/palette.js', './js/polish.js', './js/mole.js', './js/settings.js', './js/app.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];
