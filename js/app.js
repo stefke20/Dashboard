@@ -45,7 +45,10 @@
   $('#modal').addEventListener('click', (e) => {
     if (e.target.closest('[data-close]') || e.target === e.currentTarget) e.currentTarget.close();
   });
-  window.addEventListener('hashchange', route);
+  // animated page transitions where supported
+  window.addEventListener('hashchange', () => {
+    if (document.startViewTransition && !PD.fx.reduce()) document.startViewTransition(route); else route();
+  });
   // Refresh the home page when coming back to the tab after a while (e.g. next morning)
   let hiddenAt = 0;
   document.addEventListener('visibilitychange', () => {

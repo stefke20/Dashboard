@@ -1,13 +1,14 @@
 /* Service worker: makes the dashboard installable and usable offline.
    App files: network-first for the page, stale-while-revalidate for scripts/styles/icons.
    Cross-origin APIs (weather, news, Google, Strava…) always go to the network. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `daily-${VERSION}`;
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/util.js', './js/store.js', './js/fx.js', './js/charts.js', './js/exercises.js', './js/foods.js',
   './js/home.js', './js/health.js', './js/calendar.js', './js/diet.js', './js/workout.js', './js/programs.js',
-  './js/google.js', './js/sync.js', './js/air.js', './js/scanner.js', './js/settings.js', './js/app.js',
+  './js/google.js', './js/sync.js', './js/air.js', './js/scanner.js', './js/habits.js', './js/focus.js', './js/daily.js',
+  './js/trains.js', './js/fasting.js', './js/review.js', './js/reminders.js', './js/palette.js', './js/polish.js', './js/settings.js', './js/app.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];
 

@@ -468,7 +468,8 @@
         <div class="card" id="summary"></div>
         <div class="card" id="addPanel"></div>
         <div class="card" id="meals"></div>
-        <div class="card trend">
+        <div class="card" id="fastCard"></div>
+        <div class="card trend wide">
           <div class="card-head"><h2 id="trendTitle"></h2>
             <div class="segmented sm">${[7, 14, 30].map((n) => `<label><input type="radio" name="range" value="${n}" ${n === range ? 'checked' : ''}><span>${n}d</span></label>`).join('')}</div></div>
           <div class="chart-box" id="trendChart"></div>
@@ -483,7 +484,7 @@
     $('#targets').onclick = targetsModal;
     $('#myFoods').onclick = myFoodsModal;
     $$('input[name=range]').forEach((r) => (r.onchange = () => { range = +r.value; renderTrend(); }));
-    renderAdd(); renderLive();
+    renderAdd(); renderLive(); PD.fasting.card($('#fastCard'));
   }
 
   PD.diet = { render: renderAll };

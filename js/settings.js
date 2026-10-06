@@ -12,9 +12,44 @@
 
   function applyTheme() {
     document.documentElement.dataset.palette = store.get('settings').palette || 'aurora';
-    const t = store.get('settings').theme;
+    let t = store.get('settings').theme;
+    if (t === 'sun') t = isNight() ? 'dark' : 'light';
     if (t === 'auto') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', t);
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--accent-violet-ink').trim() || '#6155f5';
+  }
+
+  /** Dark between sunset and sunrise (from today's forecast, or 07:00–19:30 as a fallback). */
+  function isNight() {
+    const loc = store.get('settings').location;
+    let rise = 7 * 60; let set = 19 * 60 + 30;
+    try {
+      const wx = JSON.parse(localStorage.getItem(`pd.cache.wx.${loc.lat},${loc.lon}`))?.v;
+      const k = PD.todayKey(); const i = wx?.daily?.time?.indexOf(k);
+      if (i >= 0) { const r = new Date(wx.daily.sunrise[i]); const st = new Date(wx.daily.sunset[i]); rise = r.getHours() * 60 + r.getMinutes(); set = st.getHours() * 60 + st.getMinutes(); }
+    } catch { /* use fallback */ }
+    const n = new Date(); const m = n.getHours() * 60 + n.getMinutes();
+    return m < rise || m >= set;
+  }
+
+  function remindersSection() {
+    const r = PD.reminders.cfg(); const s = store.get('settings');
+    const perm = !('Notification' in window) ? 'unsupported' : Notification.permission;
+    return `<h3 class="sub">Reminders &amp; feel</h3>
+      ${perm === 'unsupported' ? '<p class="muted small">This browser doesn\'t support notifications (on iPhone: install the app to your home screen first).</p>'
+        : perm !== 'granted' ? '<div class="row gap"><span class="muted small grow">Allow notifications to get reminders on this device.</span><button type="button" class="btn sm" id="notifAllow">Allow notifications</button></div>' : ''}
+      <label class="toggle"><input type="checkbox" name="rEvents" ${r.events ? 'checked' : ''}> 15 minutes before events</label>
+      <label class="toggle"><input type="checkbox" name="rWorkouts" ${r.workouts ? 'checked' : ''}> Planned workouts (at their time, or 18:00)</label>
+      <label class="toggle"><input type="checkbox" name="rWater" ${r.water ? 'checked' : ''}> Drink water when behind (9:00–21:00)</label>
+      <label class="toggle"><input type="checkbox" name="rFasting" ${r.fasting ? 'checked' : ''}> When a fast reaches its goal</label>
+      <label class="toggle"><input type="checkbox" name="haptics" ${s.haptics !== false ? 'checked' : ''}> Haptic feedback (vibration on phones)</label>
+      <p class="muted small">Reminders work while the dashboard is open or running in the background.</p>`;
+  }
+  function saveReminders(f) {
+    const s = store.get('settings');
+    s.reminders = { ...PD.reminders.cfg(), events: f.rEvents.checked, workouts: f.rWorkouts.checked, water: f.rWater.checked, fasting: f.rFasting.checked };
+    s.haptics = f.haptics.checked;
   }
 
   /* ---------- App install + Google sections ---------- */
@@ -81,6 +116,8 @@
     };
     const reload = $('#gReload', body);
     if (reload) reload.onclick = async () => { try { await PD.google.loadCalendars(); close(); open('google'); } catch (e) { PD.toast(e.message); } };
+    const na = $('#notifAllow', body);
+    if (na) na.onclick = async () => { if (await PD.reminders.ask()) { na.parentElement.remove(); PD.reminders.notify('Notifications on 🔔', 'You will get reminders here.'); } };
     const inst = $('#installApp', body);
     if (inst) inst.onclick = async () => { if (await PD.pwa.install()) close(); };
   }
@@ -104,7 +141,7 @@
         <div class="row gap wrap">
           <label class="grow">Your name<input name="name" value="${esc(s.name)}" maxlength="40" placeholder="Used in the greeting"></label>
           <label class="grow">Theme<select name="theme">
-            ${[['auto', 'Match system'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}" ${s.theme === v ? 'selected' : ''}>${l}</option>`).join('')}
+            ${[['auto', 'Match system'], ['sun', 'Dark after sunset'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}" ${s.theme === v ? 'selected' : ''}>${l}</option>`).join('')}
           </select></label>
         </div>
 
@@ -134,6 +171,7 @@
         </div>
 
         ${googleSection()}
+        ${remindersSection()}
         ${appSection()}
 
         <h3 class="sub">Your data</h3>
@@ -198,7 +236,7 @@
         const prevLoc = s.location;
         s.name = f.name.value.trim(); s.theme = f.theme.value; s.location = loc;
         s.palette = f.palette.value; saved = true;
-        saveGoogle(f);
+        saveGoogle(f); saveReminders(f);
         s.feeds = $$('[data-feed]', body).map((cb) => {
           const existing = s.feeds.find((x) => x.id === cb.dataset.feed);
           return existing ? { ...existing, enabled: cb.checked } : { id: cb.dataset.feed, name: cb.dataset.name, url: cb.dataset.url, enabled: cb.checked };

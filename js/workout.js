@@ -447,9 +447,13 @@
         <div class="row gap"><label class="grow">Date<input type="date" name="date" value="${PD.shiftKey(todayKey(), 1)}" required></label>
         <label class="grow">Time<input type="time" name="time" value="07:30"></label></div>
         <label>Repeat<select name="repeat"><option value="none">Once</option><option value="weekly">Every week</option></select></label>
-        <div class="row gap end"><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn">Add to calendar</button></div>
+        <div class="row gap end"><button type="button" class="btn ghost" id="schGoogle" title="Opens Google Calendar with the event filled in">+ Google Calendar</button><span class="spacer"></span><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn">Add to calendar</button></div>
       </form>`, (body, close) => {
       $('[data-cancel]', body).onclick = close;
+      $('#schGoogle', body).onclick = () => {
+        const f = $('#schForm', body);
+        window.open(PD.gcalLink({ title: `${r.emoji} ${r.name}`, date: f.date.value, time: f.time.value, minutes: Math.round(estimate(r) / 60) + 5, details: r.items.map((it) => `${exOf(it.ex).name} — ${fmtVal(it)}`).join('\n'), weekly: f.repeat.value === 'weekly' }), '_blank', 'noopener');
+      };
       $('#schForm', body).onsubmit = (ev) => {
         ev.preventDefault(); const f = ev.target;
         store.get('events').push({ id: PD.uid(), type: 'workout', routineId: r.id, title: `${r.emoji} ${r.name}`, date: f.date.value, time: f.time.value, repeat: f.repeat.value, notes: '', done: false });
@@ -466,6 +470,7 @@
         <label>"Get ready" countdown (seconds)<input type="number" name="ready" min="0" max="60" value="${p.getReady}"></label>
         <label class="toggle"><input type="checkbox" name="sound" ${p.sound ? 'checked' : ''}> Beeps in the last 3 seconds</label>
         <label class="toggle"><input type="checkbox" name="voice" ${p.voice ? 'checked' : ''}> Voice coach (announces exercises)</label>
+        <label>Workout playlist (Spotify, YouTube Music, Apple Music…)<input type="url" name="music" value="${esc(p.music || '')}" placeholder="https://open.spotify.com/playlist/…"></label>
         <p class="muted small">Calories are estimated from exercise intensity and your latest weight (${fmt.num(bodyWeight(), 1)} kg).</p>
         <div class="row gap end"><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn">Save</button></div>
       </form>`, (body, close) => {
@@ -473,7 +478,7 @@
       $('#wpForm', body).onsubmit = (ev) => {
         ev.preventDefault(); const f = ev.target;
         w.weeklyGoal = clampNum(f.goal.value, 1, 14);
-        Object.assign(p, { getReady: clampNum(f.ready.value, 0, 60), sound: f.sound.checked, voice: f.voice.checked });
+        Object.assign(p, { getReady: clampNum(f.ready.value, 0, 60), sound: f.sound.checked, voice: f.voice.checked, music: f.music.value.trim() });
         store.save('workouts'); close(); render();
       };
     });
@@ -534,6 +539,7 @@
       <div class="pl-top">
         <button class="pl-icon" data-act="close" aria-label="End workout"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
         <div class="pl-title"><b>${esc(P.r.emoji)} ${esc(P.r.name)}</b><span>Round ${s.round || 1} of ${P.r.rounds} · ${mmss(P.total)} elapsed</span></div>
+        ${W().prefs.music ? `<a class="pl-icon" href="${esc(W().prefs.music)}" target="_blank" rel="noopener" aria-label="Open your workout playlist" title="Open your playlist">🎵</a>` : ''}
         <button class="pl-icon" data-act="sound" aria-label="Toggle sound">${W().prefs.sound ? '🔔' : '🔕'}</button>
       </div>
       <div class="pl-progress">${ws.map((w, k) => `<i class="${k < doneSoFar ? 'done' : k === wi ? 'now' : ''}"></i>`).join('')}</div>
@@ -687,5 +693,5 @@
     if (PD.app.current() === 'workout') render(); else PD.app.renderCurrent();
   }
 
-  PD.workout = { render, start, stats, weeklyMinutes, estimate, catColor, exOf, fmtVal, routineFigs: (items) => items.slice(0, 5).map((it) => `<span title="${esc(exOf(it.ex).name)}">${X().figure(exOf(it.ex), { still: true })}</span>`).join('') };
+  PD.workout = { render, start, detail, stats, weeklyMinutes, estimate, catColor, exOf, fmtVal, routineFigs: (items) => items.slice(0, 5).map((it) => `<span title="${esc(exOf(it.ex).name)}">${X().figure(exOf(it.ex), { still: true })}</span>`).join('') };
 })(window.PD);

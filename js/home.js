@@ -115,6 +115,7 @@
     // sunrise/sunset also feeds the hero
     const sun = $('#heroSun');
     if (sun) sun.textContent = `☀ ${fmt.time(new Date(dl.sunrise[0]))} – ${fmt.time(new Date(dl.sunset[0]))}`;
+    PD.daily.renderBriefing(); PD.settings.applyTheme(); // sunset theme uses today's sun times
   }
 
   function rainTip(hours) {
@@ -326,7 +327,13 @@
     const start = new Date(now.getFullYear(), 0, 1);
     const dayOfYear = Math.floor((now - start) / 864e5) + 1;
     const daysInYear = ((now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || now.getFullYear() % 400 === 0) ? 366 : 365;
+    const m = PD.daily.moon(now);
     el.innerHTML = `
+      <div class="hero-actions">
+        <button class="hero-btn" id="heroSpeak" title="Read my briefing aloud" aria-label="Read my briefing aloud"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+        <button class="hero-btn" id="heroReview" title="Your week in review" aria-label="Your week in review"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></button>
+        <button class="hero-btn" id="heroCustomize" title="Customise home" aria-label="Customise home"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg></button>
+      </div>
       <p class="eyebrow">${esc(greeting(now.getHours()))}${name ? `, ${esc(name)}` : ''} 👋</p>
       <h1 class="hero-day">${esc(fmt.weekday(now, 'long'))}</h1>
       <p class="hero-date">${esc(fmt.date(now, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
@@ -334,12 +341,71 @@
         <span class="pill violet">Week ${PD.isoWeek(now)}</span>
         <span class="pill mint" id="heroClock">${fmt.time(now)}</span>
         <span class="pill peach" id="heroSun">☀ –</span>
+        <span class="pill" title="${esc(m.name)} · ${m.illum}% illuminated">${m.icon} ${esc(m.name)}</span>
       </div>
+      <p class="briefing" id="briefing" hidden></p>
       <div class="year-progress" title="Day ${dayOfYear} of ${daysInYear}">
         <span class="muted small">Day ${dayOfYear} of ${daysInYear}</span>
         <span class="bar-track"><i style="width:${(dayOfYear / daysInYear) * 100}%"></i></span>
         <span class="muted small">${Math.round((dayOfYear / daysInYear) * 100)}%</span>
       </div>`;
+    $('#heroSpeak').onclick = PD.daily.speakBriefing;
+    $('#heroReview').onclick = () => PD.review.open();
+    $('#heroCustomize').onclick = customize;
+    PD.daily.renderBriefing();
+  }
+
+  /* ---------- customisable layout ---------- */
+  const CARDS = {
+    hero: { label: 'Greeting, date & briefing', col: 'L', fixed: true, html: '<div class="card hero" id="hero"></div>' },
+    tiles: { label: 'Snapshot tiles', col: 'L', html: '<div class="tiles" id="tiles"></div>' },
+    weather: { label: 'Weather', col: 'R', html: '<div class="card weather" id="weather"><div class="card-head"><h2>Weather</h2></div><div class="skeleton tall"></div></div>' },
+    air: { label: 'Air & pollen', col: 'R', html: '<div class="card" id="air"><div class="card-head"><h2>Air &amp; pollen</h2></div><div class="skeleton"></div></div>' },
+    agenda: { label: 'Up next', col: 'R', html: '<div class="card" id="agenda"></div>' },
+    habits: { label: 'Habits & mood', col: 'L', html: '<div class="card" id="habitsCard"></div>' },
+    tasks: { label: "Today's tasks", col: 'R', html: '<div class="card" id="tasks"></div>' },
+    focus: { label: 'Focus timer', col: 'R', html: '<div class="card" id="focusCard"></div>' },
+    news: { label: 'News', col: 'L', html: `<div class="card news-card" id="newsCard"><div class="card-head"><h2>News</h2>
+      <button class="icon-btn sm" id="newsRefresh" title="Refresh" aria-label="Refresh news"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
+      <div class="chips" id="newsChips"></div><div id="newsList"></div></div>` },
+    trains: { label: 'Trains (NMBS)', col: 'R', html: '<div class="card" id="trains"><div class="card-head"><h2>🚆 Trains</h2></div><div class="skeleton"></div></div>' },
+    dose: { label: 'Quote & on this day', col: 'L', html: '<div class="card" id="dose"></div>' },
+  };
+  const DEFAULT_ORDER = ['hero', 'tiles', 'weather', 'air', 'agenda', 'habits', 'tasks', 'focus', 'news', 'trains', 'dose'];
+
+  function layout() {
+    const h = store.get('settings').home || {};
+    const order = [...(h.order || []).filter((id) => CARDS[id]), ...DEFAULT_ORDER.filter((id) => !(h.order || []).includes(id))];
+    return order.map((id) => ({ id, ...CARDS[id], col: h.cols?.[id] || CARDS[id].col, hidden: !CARDS[id].fixed && (h.hidden || []).includes(id) }));
+  }
+
+  function customize() {
+    let rows = layout();
+    const draw = (body, close) => {
+      body.innerHTML = `
+        <p class="muted small">Show, hide and reorder the cards on your home page. On a wide screen, choose the column; on a phone they stack in this order.</p>
+        <ol class="items layout-list">${rows.map((r, i) => `
+          <li class="item" data-i="${i}">
+            <label class="toggle grow"><input type="checkbox" ${r.hidden ? '' : 'checked'} ${r.fixed ? 'disabled' : ''} data-vis> <b>${esc(r.label)}</b></label>
+            <span class="segmented sm"><label><input type="radio" name="c${i}" value="L" ${r.col === 'L' ? 'checked' : ''}><span>Left</span></label><label><input type="radio" name="c${i}" value="R" ${r.col === 'R' ? 'checked' : ''}><span>Right</span></label></span>
+            <span class="item-move">
+              <button type="button" class="icon-btn sm ghost" data-up ${i === 0 ? 'disabled' : ''} aria-label="Move up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
+              <button type="button" class="icon-btn sm ghost" data-down ${i === rows.length - 1 ? 'disabled' : ''} aria-label="Move down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+            </span>
+          </li>`).join('')}</ol>
+        <div class="row gap end"><button type="button" class="btn ghost" id="layReset">Reset</button><span class="spacer"></span><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="button" class="btn" id="laySave">Save</button></div>`;
+      const read = () => { $$('.layout-list .item', body).forEach((li) => { const r = rows[+li.dataset.i]; r.hidden = !$('[data-vis]', li).checked; r.col = $('input[type=radio]:checked', li).value; }); };
+      const move = (i, d) => { read(); const [x] = rows.splice(i, 1); rows.splice(i + d, 0, x); draw(body, close); };
+      $$('.layout-list .item', body).forEach((li) => { const i = +li.dataset.i; $('[data-up]', li).onclick = () => move(i, -1); $('[data-down]', li).onclick = () => move(i, 1); });
+      $('[data-cancel]', body).onclick = close;
+      $('#layReset', body).onclick = () => { store.get('settings').home = {}; rows = layout(); draw(body, close); };
+      $('#laySave', body).onclick = () => {
+        read();
+        store.get('settings').home = { order: rows.map((r) => r.id), hidden: rows.filter((r) => r.hidden).map((r) => r.id), cols: Object.fromEntries(rows.map((r) => [r.id, r.col])) };
+        store.save('settings'); close(); render(); PD.fx.enter($('#page-home'));
+      };
+    };
+    PD.modal('Customise home', '', draw);
   }
 
   let clockTimer; let renderedDay;
@@ -356,33 +422,26 @@
   function render() {
     renderedDay = PD.todayKey();
     const page = $('#page-home');
-    page.innerHTML = `
-      <div class="home-grid">
-        <div class="home-col">
-          <div class="card hero" id="hero"></div>
-          <div class="tiles" id="tiles"></div>
-          <div class="card news-card">
-            <div class="card-head"><h2>News</h2>
-              <button class="icon-btn sm" id="newsRefresh" title="Refresh" aria-label="Refresh news"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
-            <div class="chips" id="newsChips"></div>
-            <div id="newsList"></div>
-          </div>
-        </div>
-        <div class="home-col">
-          <div class="card weather" id="weather"><div class="card-head"><h2>Weather</h2></div><div class="skeleton tall"></div></div>
-          <div class="card" id="air"><div class="card-head"><h2>Air &amp; pollen</h2></div><div class="skeleton"></div></div>
-          <div class="card" id="agenda"></div>
-          <div class="card" id="tasks"></div>
-        </div>
-      </div>`;
+    const rows = layout().filter((r) => !r.hidden);
+    // inline order = phone stacking order (columns use display: contents there)
+    const col = (c) => rows.map((r, i) => (r.col === c ? r.html.replace(/^<div /, `<div style="order:${i}" `) : '')).join('');
+    page.innerHTML = `<div class="home-grid"><div class="home-col">${col('L')}</div><div class="home-col">${col('R')}</div></div>`;
     renderHero(); renderTiles(); renderTasks(); renderAgenda();
-    loadWeather(); loadNews(); PD.air.load();
-    $('#newsRefresh').onclick = () => {
+    PD.habits.card($('#habitsCard')); PD.focus.card($('#focusCard'));
+    loadWeather(); loadNews(); PD.air.load(); PD.trains.load(); PD.daily.dose();
+    const nr = $('#newsRefresh');
+    if (nr) nr.onclick = () => {
       store.get('settings').feeds.forEach((f) => localStorage.removeItem(`pd.cache.news.${f.id}`));
       loadNews();
     };
     startClock();
   }
 
-  PD.home = { render, renderTiles, renderAgenda, clearNewsCache: () => Object.keys(localStorage).filter((k) => k.startsWith('pd.cache.news.')).forEach((k) => localStorage.removeItem(k)) };
+  /** Pull-to-refresh: reload all live cards. */
+  function refresh() {
+    Object.keys(localStorage).filter((k) => /^pd\.cache\.(news|wx|air|trains)\./.test(k)).forEach((k) => localStorage.removeItem(k));
+    render(); PD.toast('Refreshed');
+  }
+
+  PD.home = { render, renderTiles, renderAgenda, refresh, customize, renderTasks, clearNewsCache: () => Object.keys(localStorage).filter((k) => k.startsWith('pd.cache.news.')).forEach((k) => localStorage.removeItem(k)) };
 })(window.PD);

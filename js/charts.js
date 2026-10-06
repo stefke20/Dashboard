@@ -112,6 +112,7 @@
       if (!vals.length) { el.innerHTML = '<p class="empty">No data yet.</p>'; return; }
       let lo = Math.min(...vals); let hi = Math.max(...vals);
       const padV = Math.max((hi - lo) * 0.15, 0.5); lo = Math.floor(lo - padV); hi = Math.ceil(hi + padV);
+      if (opts.yMin != null) lo = opts.yMin; if (opts.yMax != null) hi = opts.yMax; // fixed scales (e.g. mood 1–5)
       const x = (i) => m.l + (points.length === 1 ? iw / 2 : (i / (points.length - 1)) * iw);
       const y = (v) => m.t + ih - ((v - lo) / (hi - lo)) * ih;
       const color = opts.color || 'var(--accent-sky-ink)';

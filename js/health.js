@@ -384,6 +384,7 @@
       <div class="page-head"><div><h1>Health</h1><p class="muted">Training from Strava, body data from Samsung Health or your own log.</p></div></div>
       ${stravaSection()}
       ${workoutSection()}
+      ${PD.habits.section()}
       ${bodySection()}`;
 
     const sf = $('#stravaForm');
@@ -401,7 +402,7 @@
       render();
     };
     $$('#sportChips .chip').forEach((c) => (c.onclick = () => { sportFilter = c.dataset.g; render(); }));
-    drawWeekly(); drawWorkouts(); drawBody();
+    drawWeekly(); drawWorkouts(); PD.habits.drawSection(); drawBody();
 
     const hf = $('#healthForm');
     hf.date.onchange = () => {

@@ -24,6 +24,21 @@ python3 -m http.server 8080   # then open http://localhost:8080
 
 Opening `index.html` directly (`file://`) works too, but Strava login needs http(s).
 
+## Everyday extras
+
+- **Morning briefing** on the Home header: weather, events, birthdays, planned workouts, pollen and open tasks in a few sentences. Press 🔊 to have it read aloud.
+- **Customise home** (▦ button on the header): show, hide and reorder every card, and choose left or right column.
+- **Habits & mood**: daily check-ins with streaks (water and "workout or 10k steps" tick themselves), a mood picker with a one-line note, and 15-week heatmaps plus a mood trend in Health.
+- **Focus timer** (Pomodoro) linked to your tasks, with a floating timer pill on other tabs and the time in the browser tab.
+- **Intermittent fasting** timer in Diet (12:12 to 24 h), with recent fasts.
+- **Trains**: live NMBS/SNCB departures (delays, platforms, cancellations) from your station and the next connections to your favourite destination, via [iRail](https://docs.irail.be).
+- **Daily dose**: quote of the day (incl. Dutch proverbs) and "On this day" from Wikipedia.
+- **Your week** (📊 on the header): a story-style weekly review across workouts, food, body, habits, mood and focus — shareable.
+- **Quick actions**: press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> or <kbd>/</kbd> (or the 🔍 button) to jump anywhere, start a routine, log water or weight, check a habit, start focus/fasting — or just type “call mum” to add it as a task. Press <kbd>?</kbd> for all shortcuts.
+- **Reminders** (Settings): events, planned workouts, water, fasting goal and focus/break ends as notifications while the app is open or in the background.
+- **Dark after sunset** theme, haptic feedback, swipe between tabs (and months in the calendar), pull down on Home to refresh, smooth page transitions and an offline indicator.
+- **Integrations**: a 🎵 button in the workout player opens your Spotify/YouTube Music/Apple Music playlist; planned workouts and events can be copied to Google Calendar in one tap.
+
 ## Install it as an app on your phone
 
 Open the dashboard's https address on your phone, then:
@@ -80,13 +95,14 @@ Everything lives in `localStorage` in the browser you use. Use **Settings → Do
 
 ## Roadmap ideas
 
-- Habit tracker with a streak heatmap
-- Weekly review page
-- Push reminders (water, workout)
+- Real push notifications when the app is closed (needs a small push server)
+- Recipes and meal plans with a shopping list
+- Body measurements and progress photos
 
 ## Data sources
 
 - Weather and place search: [Open-Meteo](https://open-meteo.com) (no API key needed)
+- Trains: [iRail](https://api.irail.be) (NMBS/SNCB open data) · "On this day": [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/)
 - Air quality & pollen: [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) (Copernicus CAMS)
 - Food database: [Open Food Facts](https://world.openfoodfacts.org) · barcode reading: the browser's BarcodeDetector or [ZXing](https://github.com/zxing-js/library)
 - News: RSS fetched through public CORS proxies (rss2json, allorigins, corsproxy.io, tried in that order), with a 20-minute cache

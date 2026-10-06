@@ -237,7 +237,7 @@
           <select name="repeat">${['none', 'weekly', 'monthly', 'yearly'].map((r) => `<option value="${r}" ${r === (ev.repeat || 'none') ? 'selected' : ''}>${r === 'none' ? 'Does not repeat' : r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></label>
         <label>Notes<textarea name="notes" rows="2" maxlength="500">${esc(ev.notes || '')}</textarea></label>
         <div class="row gap end">
-          ${isNew ? '' : '<button type="button" class="btn danger ghost" id="evDelete">Delete</button><span class="spacer"></span>'}
+          ${isNew ? '' : '<button type="button" class="btn ghost danger" id="evDelete">Delete</button><button type="button" class="btn ghost" id="evGoogle" title="Copy to Google Calendar">+ Google</button><span class="spacer"></span>'}
           <button type="button" class="btn ghost" data-cancel>Cancel</button>
           <button type="submit" class="btn">${isNew ? 'Add' : 'Save'}</button>
         </div>
@@ -265,6 +265,8 @@
         viewMonth = parseKey(data.date); viewMonth.setDate(1);
         close(); render(); PD.toast(isNew ? 'Added to calendar' : 'Saved');
       };
+      const gl = $('#evGoogle', body);
+      if (gl) gl.onclick = () => window.open(PD.gcalLink({ title: ev.title, date: ev.date, time: ev.time, details: ev.notes, allDay: ev.type === 'birthday' || !ev.time, yearly: ev.type === 'birthday' || ev.repeat === 'yearly', weekly: ev.repeat === 'weekly' }), '_blank', 'noopener');
       const del = $('#evDelete', body);
       if (del) del.onclick = () => {
         if (!confirm('Delete this item?')) return;
@@ -313,5 +315,5 @@
     PD.toast(`Imported ${added} event${added === 1 ? '' : 's'}`);
   }
 
-  PD.calendar = { render, upcoming, between, TYPES };
+  PD.calendar = { render, upcoming, between, TYPES, add: (prefill = {}) => editor({ date: todayKey(), ...prefill }) };
 })(window.PD);

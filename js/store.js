@@ -43,6 +43,19 @@
       ],
     },
     tasks: [],            // [{id, text, done, date}]
+    habits: {
+      list: [
+        { id: 'h-water', name: 'Drink enough water', emoji: '💧', auto: 'water' },
+        { id: 'h-move', name: 'Workout or 10k steps', emoji: '🏃', auto: 'move' },
+        { id: 'h-read', name: 'Read 20 minutes', emoji: '📖' },
+        { id: 'h-mind', name: 'Meditate or breathe', emoji: '🧘' },
+        { id: 'h-sleep', name: 'In bed before 23:00', emoji: '🌙' },
+      ],
+      log: {},            // { 'YYYY-MM-DD': [habitId…] } manual check-ins
+    },
+    journal: {},          // { 'YYYY-MM-DD': { mood: 1-5, note } }
+    focus: { work: 25, brk: 5, sessions: [] }, // sessions: [{id, date, start, minutes, label, taskId}]
+    fasting: { goal: 16, active: null, history: [] }, // active: {start, goal}; history: [{id, start, end, goal}]
     events: [],           // [{id, title, date, time, type: event|task|birthday, notes, done}]
     diet: {
       targets: { kcal: 2000, protein: 120, carbs: 230, fat: 70, water: 8 },

@@ -84,7 +84,7 @@
           <span class="pollen-days">${r.days.slice(1).map(([d, v]) => `<span class="lvdot ${LEVELS[level(v, r.th)].cls}" title="${esc(fmt.weekday(PD.parseKey(d)))}: ${LEVELS[level(v, r.th)].label}">${esc(fmt.weekday(PD.parseKey(d)).slice(0, 2))}</span>`).join('')}</span>
         </div>`).join('')}
       ${!rows.some((r) => r.lv > 0) ? `<p class="muted small">Seasons: ${POLLEN.slice(0, 5).map((p) => `${p.name} ${p.season}`).join(' · ')}</p>` : ''}`;
-    bind(); PD.fx.countUp(el);
+    bind(); PD.fx.countUp(el); PD.daily.renderBriefing();
   }
 
   function bind() {

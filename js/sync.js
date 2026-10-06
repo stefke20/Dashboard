@@ -4,7 +4,7 @@
    last sync, the two versions are merged (lists by id, dated records by date) so nothing is lost. */
 (function (PD) {
   const { store } = PD;
-  const KEYS = ['settings', 'tasks', 'events', 'diet', 'health', 'workouts']; // never: strava, google (credentials)
+  const KEYS = ['settings', 'tasks', 'events', 'diet', 'health', 'workouts', 'habits', 'journal', 'focus', 'fasting']; // never: strava, google (credentials)
   const FILE = 'dashboard-sync.json';
   const DRIVE = 'https://www.googleapis.com/drive/v3';
   const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';

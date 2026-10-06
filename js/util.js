@@ -150,7 +150,20 @@ window.PD = window.PD || {};
   const debounce = (fn, ms = 300) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
   const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-  Object.assign(PD, {
+  /** A Google Calendar "create event" link with everything pre-filled (no login or API needed). */
+  function gcalLink({ title, date, time, minutes = 60, details = '', allDay = false, weekly = false, yearly = false }) {
+    const d = date.replace(/-/g, '');
+    let dates;
+    if (allDay || !time) { const next = keyOf(addDays(parseKey(date), 1)).replace(/-/g, ''); dates = `${d}/${next}`; } else {
+      const [h, m] = time.split(':').map(Number); const end = new Date(parseKey(date)); end.setHours(h, m + minutes);
+      dates = `${d}T${pad(h)}${pad(m)}00/${keyOf(end).replace(/-/g, '')}T${pad(end.getHours())}${pad(end.getMinutes())}00`;
+    }
+    const q = new URLSearchParams({ action: 'TEMPLATE', text: title, dates, details, ctz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    if (weekly) q.set('recur', 'RRULE:FREQ=WEEKLY'); if (yearly) q.set('recur', 'RRULE:FREQ=YEARLY');
+    return `https://calendar.google.com/calendar/render?${q}`;
+  }
+
+  Object.assign(PD, { gcalLink,
     esc, $, $$, uid, pad, keyOf, todayKey, parseKey, addDays, shiftKey, daysBetween, lastNDays,
     isoWeek, startOfWeek, fmt, relDay, fetchJSON, fetchText, toast, modal, ring, download, readFile,
     parseCSV, debounce, norm,
