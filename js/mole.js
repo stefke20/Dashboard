@@ -117,6 +117,7 @@
       ['🔊', 'Briefing', () => PD.daily.speakBriefing()],
       ['📊', 'My week', () => PD.review.open()],
       ['🎁', 'Locker', () => PD.rewards.locker()],
+      ['🧭', 'Take the tour', () => PD.tour.start()],
       ['💬', 'Say something', () => setTimeout(quip, 250)],
     ];
   }
@@ -333,7 +334,7 @@
   }
 
   function say(text, ms = 6000) {
-    const s = $('#moleSay'); if (!s || wrap.classList.contains('open')) return;
+    const s = $('#moleSay'); if (!s || wrap.classList.contains('open') || document.body.classList.contains('touring')) return;
     s.textContent = text; s.hidden = false; requestAnimationFrame(() => s.classList.add('show'));
     clearTimeout(say.t); say.t = setTimeout(hideSpeech, ms);
   }

@@ -65,6 +65,7 @@
   setTimeout(() => PD.game.check(), 1500); // first run adopts existing progress quietly
   PD.seasons.greet();
   PD.mole.init();
+  PD.tour.maybeStart();
 })(window.PD);
 
 /* Installable app (PWA): service worker + install prompt. */
@@ -88,7 +89,7 @@
   if (standalone()) document.documentElement.classList.add('standalone');
 
   PD.pwa = {
-    version: 'v13', // keep in sync with VERSION in sw.js
+    version: 'v14', // keep in sync with VERSION in sw.js
     /** Ask the service worker for a fresh copy of the app, then reload. */
     async update() {
       try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch { /* offline */ }

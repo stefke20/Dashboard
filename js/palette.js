@@ -20,6 +20,7 @@
       { icon: '🧩', label: 'Customise home layout', run: () => { go('home'); after(PD.home.customize); }, kw: 'cards order hide' },
       { icon: '📊', label: 'Your week in review', run: () => PD.review.open(), kw: 'summary stats wrapped' },
       { icon: '🏆', label: 'Achievements & XP', run: () => PD.game.gallery(), kw: 'badges level game trophies' },
+      { icon: '🧭', label: 'Take the guided tour', run: () => PD.tour.start(), kw: 'help guide intro how onboarding ester' },
       { icon: '🎲', label: 'Random workout', run: () => PD.randomizer.open(), kw: 'shuffle generate surprise quick workout minutes' },
       { icon: '🗓️', label: 'Random programme', run: () => PD.randomizer.programme(), kw: 'shuffle generate plan weeks' },
       { icon: '🎁', label: 'Open the Locker (rewards)', run: () => PD.rewards.locker(), kw: 'themes unlock rewards skins confetti' },

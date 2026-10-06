@@ -1630,3 +1630,70 @@ body:has(.mud-layer) .mole-wrap { z-index: 401; }
 .rnd-list li svg { width: 54px; height: 54px; flex: none; }
 .rnd-list li .grow { display: flex; flex-direction: column; min-width: 0; }
 .section-head { flex-wrap: wrap; gap: 8px; }
+
+/* ============ Guided tour with Ester ============ */
+.tour { position: fixed; inset: 0; z-index: 600; pointer-events: auto; }
+.tour-spot { position: fixed; border-radius: 18px; box-shadow: 0 0 0 200vmax rgba(12, 10, 24, .58), 0 0 0 3px var(--accent-violet-ink), 0 0 24px 4px color-mix(in srgb, var(--accent-violet-ink) 60%, transparent);
+  transition: left .55s var(--ease-out), top .55s var(--ease-out), width .55s var(--ease-out), height .55s var(--ease-out); pointer-events: none; }
+.tour.fading .tour-spot { box-shadow: 0 0 0 200vmax rgba(12, 10, 24, 0); transition: box-shadow .8s; }
+.tour-skip { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 14px; z-index: 2; border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(255, 255, 255, .92); color: #222; font: 600 13px var(--font); cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+.tour-guide { position: fixed; left: 0; top: 0; display: flex; flex-direction: column; align-items: flex-start; will-change: transform; }
+.tour-bubble { position: relative; width: 100%; box-sizing: border-box; background: var(--surface); color: var(--text); border-radius: 20px; padding: 14px 16px 12px; box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .45); border: 1px solid var(--border);
+  transition: opacity .2s, transform .3s var(--ease-spring); animation: bubbleIn .35s var(--ease-spring); }
+.tour-bubble.hide { opacity: 0; transform: scale(.9) translateY(8px); pointer-events: none; }
+.tour-bubble::after { content: ''; position: absolute; left: 50px; bottom: -9px; width: 18px; height: 18px; background: var(--surface); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transform: rotate(45deg); }
+@keyframes bubbleIn { from { opacity: 0; transform: scale(.85) translateY(10px); } }
+.tour-bubble b { font-family: var(--display); font-size: 17px; }
+.tour-bubble p { margin: 6px 0 10px; font-size: 14px; line-height: 1.5; color: var(--text); }
+.tour-dots { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--track); transition: all .3s; }
+.tour-dots i.seen { background: color-mix(in srgb, var(--accent-violet-ink) 45%, var(--track)); }
+.tour-dots i.on { width: 20px; border-radius: 4px; background: var(--accent-violet-ink); }
+.tour-btns { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-ester { width: 104px; height: 132px; margin: 4px 0 0 18px; position: relative; filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .3)); }
+.t-mole { width: 100%; height: 100%; overflow: visible; stroke: none; }
+.t-mole * { transform-box: fill-box; }
+.t-mole [transform] { transform-box: view-box; }
+.t-shadow { fill: rgba(0, 0, 0, .22); }
+.t-eyes circle:not([fill]) { fill: #1f1716; }
+.t-front, .t-back { transition: opacity .12s; }
+.t-back { opacity: 0; }
+.tour-ester.back .t-front { opacity: 0; }
+.tour-ester.back .t-back { opacity: 1; }
+/* turning around = a quick squash */
+.tour-ester .t-mole { transform-origin: 50% 100%; transition: transform .25s var(--ease-spring); }
+.tour-ester.back .t-mole { animation: turnSquash .26s ease-out; }
+@keyframes turnSquash { 50% { transform: scaleX(.15); } }
+/* idle: breathe, blink and wave */
+.tour-ester:not(.walking):not(.back) .t-front { animation: tBreathe 3s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes tBreathe { 50% { transform: scaleY(1.02) translateY(-1px); } }
+.t-eyes { transform-origin: center; animation: moleBlink 4.5s infinite; }
+.tour-ester:not(.walking):not(.back) .t-arm-r { transform-origin: 30% 20%; animation: tWave 1.6s ease-in-out infinite; }
+@keyframes tWave { 0%, 60%, 100% { transform: rotate(0); } 15%, 45% { transform: rotate(-35deg) translateY(-6px); } 30% { transform: rotate(-15deg) translateY(-8px); } }
+.tour-ester.point-up:not(.walking):not(.back) .t-arm-r { animation: none; transform: rotate(-150deg) translate(-4px, 4px); transform-origin: 30% 20%; }
+/* cute butt wiggle */
+.tour-ester.wiggle .t-butt { transform-origin: 50% 20%; animation: buttWiggle .52s ease-in-out; }
+@keyframes buttWiggle { 20% { transform: rotate(-10deg); } 45% { transform: rotate(9deg); } 70% { transform: rotate(-6deg); } 90% { transform: rotate(3deg); } }
+.tour-ester.wiggle .t-tail, .tour-ester.walking .t-tail { transform-origin: 50% 100%; animation: tailWag .26s ease-in-out infinite alternate; }
+@keyframes tailWag { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+/* walking: bob, waddle and step */
+.tour-ester.walking .t-mole { animation: tWaddle .36s ease-in-out infinite alternate; }
+@keyframes tWaddle { from { transform: rotate(-5deg) translateY(0); } to { transform: rotate(5deg) translateY(-5px); } }
+.tour-ester.walking .t-butt { transform-origin: 50% 20%; animation: buttSway .36s ease-in-out infinite alternate; }
+@keyframes buttSway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+.tour-ester.walking .t-foot-l { animation: tStep .36s ease-in-out infinite alternate; }
+.tour-ester.walking .t-foot-r { animation: tStep .36s ease-in-out infinite alternate-reverse; }
+@keyframes tStep { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+.tour-ester.walking.left .t-mole { animation-name: tWaddleL; }
+@keyframes tWaddleL { from { transform: rotate(5deg) translateY(0); } to { transform: rotate(-5deg) translateY(-5px); } }
+.tour-ester.hop .t-mole { animation: tHop .45s var(--ease-spring); }
+@keyframes tHop { 40% { transform: translateY(-14px) scaleY(1.05); } 70% { transform: scaleY(.94); } }
+/* first appearance: climb out of the ground */
+.tour-ester.climb .t-mole { animation: tClimb .9s var(--ease-spring) both; }
+@keyframes tClimb { 0% { transform: translateY(60px) scale(.6); opacity: 0; } 50% { opacity: 1; } 75% { transform: translateY(-10px) scale(1.04); } 100% { transform: none; } }
+/* last: dive into the molehill */
+.tour-ester.dive .t-mole { animation: tDive .6s ease-in forwards; }
+@keyframes tDive { 30% { transform: translateY(-16px) rotate(-8deg); } 100% { transform: translateY(40px) scale(.35) rotate(170deg); opacity: 0; } }
+body.touring .mole-say { display: none; }
+@media (max-width: 760px) { .tour-ester { width: 84px; height: 108px; } .tour-bubble p { font-size: 13.5px; } }
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } .tour-ester * { animation: none !important; } }

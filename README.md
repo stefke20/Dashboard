@@ -89,6 +89,8 @@ The Locker has filter chips (per type, or *✓ Unlocked* only) and the 🏆 Achi
 
 ## Ester the Child Mole 🐾
 
+**Guided tour.** On your first visit Ester climbs out of the ground and walks you through the dashboard: a spotlight on each part (tabs, the Home header, weather, tasks, habits, Health, XP & the Locker, workouts, the Board, Calendar, Diet, Settings and the molehill), with *Back*, *Next* and **Skip tour** (or <kbd>Esc</kbd>, arrow keys). Between stops Ester turns around — yes, you get to see the butt, with a wiggle and a wagging tail — and waddles to the next spot; at the end Ester dives back into the molehill. Take it again from Ester's menu (🧭 Take the tour), <kbd>Ctrl</kbd>+<kbd>K</kbd> or *Settings → Phone app*.
+
 Ester lives in the bottom-right corner, peeking out of the molehill, breathing and blinking, following your mouse with both eyes, waving when you hover, digging when you switch pages, cheering when you celebrate, now and then burrowing into the molehill and popping right back out, and sleeping at night (23:00–06:00). Once a day Ester greets you with the first line of your briefing.
 
 Tap Ester for the menu (“Child Mole Ester”): your status for today, a search box (pages, routines, exercises, habits and typed commands like “call mum”), buttons for every page and quick actions — +1 water, add a task, start focus, start your workout or next programme session, new note, scan food, read the briefing, your week and the Locker. Dress Ester up with outfits from the Locker; on Christmas, Halloween and your birthday Ester dresses up without any help.
@@ -108,7 +110,7 @@ Pick *Seasonal (auto)* in *Settings → Colour scheme* to follow the seasons (au
 
 ## Updates
 
-*Settings → Phone app* shows the **app version** (now v13) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
+*Settings → Phone app* shows the **app version** (now v14) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
 
 ## Install it as an app on your phone
 
