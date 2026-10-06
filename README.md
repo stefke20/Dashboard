@@ -8,7 +8,7 @@ It's plain HTML, CSS and JavaScript with no build step and no dependencies. Your
 | **Home** | **Air & pollen** for your town (European air-quality index, birch/alder/grass/mugwort/ragweed/olive pollen with a 3-day outlook, warnings for *your* allergies) · Greeting, date, ISO week, live clock, sunrise/sunset, year progress · weather for Westerlo (now, a rain tip, 24 h hourly, 7-day forecast) · news feed (5 headlines at a time from VRT NWS, HLN, Sporza, BBC World; add your own RSS feeds) · snapshot tiles (calories, steps, active minutes this week from workouts + Strava, water) · "Today's focus" task list (unfinished tasks carry over) · "Up next" from the calendar (including Google Calendar and planned workouts) |
 | **Health** | **Home workouts** (from My workout): weekly sessions vs goal, minutes, calories, total active minutes incl. Strava, 12-week chart, session history · **Strava**: this week's totals, year-to-date totals, a 12-week distance chart, recent activities with pace/HR, and sport filters · **Samsung Health**: CSV import (steps, weight, sleep, heart rate) · manual log · step and weight goals · 14-day steps chart and 90-day weight trend |
 | **My workout** | 66 home exercises (bodyweight, resistance band, chair, wall, dumbbells), each with an animated figure, steps, tips and a video link (or your own YouTube/GIF link) · ready-made routines (7-Minute Classic, HIIT, Core, Lower body, Upper body, Band Strength, Mobility) · a routine builder (rounds, rest, time or reps per exercise, each side, drag to reorder) · custom exercises · a full-screen guided player with countdown ring, rest timers, beeps, voice coach, pause/skip/+10 s, keyboard shortcuts and screen wake-lock · a finish screen with calories, a rating and optional Strava upload · weekly goal and streak · **multi-week programmes** (Bodyweight Basics, Strength Builder, Core 30, HIIT Burn, Band Builder, or build your own from your routines) with weekly progression, your own training days, a week-by-week plan and calendar integration |
-| **Board** | **Kanban board**: columns you can add, rename, colour and reorder; drag cards with the mouse or (long-press) on your phone; labels, due dates (shown in the calendar and "Up next"), notes and checklists · **Notes**: pinned and coloured notes with search, headings, lists and tick-able checklists, autosaved |
+| **Board** | **Kanban board**: columns you can add, rename, colour and reorder; drag cards with the mouse or (long-press) on your phone; labels, notes and checklists; due dates appear in the calendar in the card's label colour (click to open the card), and overdue cards show first under "Up next" · **Notes**: pinned and coloured notes with search, headings, lists and tick-able checklists, autosaved |
 | **Calendar** | Month view with events, tasks (checkable) and birthdays (yearly, shows the age) · weekly, monthly and yearly repeats · Belgian public holidays · **live Google Calendar** (all your calendars, incl. birthdays, in their own colours) · `.ics` import · next 30 days and upcoming birthdays |
 | **Diet** | Calorie and macro counter per day (breakfast, lunch, dinner, snacks) · built-in list of ~90 common (Belgian) foods · **Open Food Facts** online search · **barcode scanning with your phone camera** · quick add · "my foods" · recent foods · copy a meal from yesterday · water · targets with a BMR/TDEE calculator · 7/14/30-day chart with a target line · averages and a logging streak · full history and CSV export |
 
@@ -58,7 +58,20 @@ Every badge unlocks a reward you can switch on in the **Locker** (🎁 button in
 | Cursor trails | Sparkle (Food logger) · Rainbow (Perfect ten) · Comet (Shipper) |
 | Level frames | Flame (Habit master) · Legend (Legend) |
 
-When you earn a badge, its popup has a **Use it** button. Unlocked themes also appear in *Settings → Colour scheme*; locked ones show how to earn them.
+| Mole outfits | Superhero cape (Double century) · Sweatband (Weekend warrior) · Cool shades (Lunch break) · Headphones (In the zone) · Party hat (Note taker) · Crown (Hero) · Wizard hat (Collector) |
+| Sound packs | 8-bit (Mix it up) · Arcade (Tracked) · Wind chimes (Whale) |
+| Fonts | Rounded (Planner) · Monospace (Productivity machine) · Editorial serif (Food historian) |
+| Card styles | Glass (In touch) · Outline (Night fast) · Clay (Triple graduate) |
+| Titles | Inferno (Inferno) · Habit Legend (Diamond habit) · Mythic Mole (Mythic) — shown next to your name and level |
+| More of the above | Sunrise theme (Morning person) · Lightning confetti (Lightning streak) · Borealis player skin (Explorer) · Heart trail (Centred) |
+
+54 badges in total. When you earn a badge, its popup has a **Use it** button. Unlocked themes also appear in *Settings → Colour scheme*; locked ones show how to earn them.
+
+## Mo the mole 🐾
+
+Mo lives in the bottom-right corner. He peeks out of his molehill, breathes and blinks, follows your mouse with his eyes, waves when you hover, digs when you switch pages, cheers when you celebrate and sleeps at night (23:00–06:00). Once a day he greets you with the first line of your briefing.
+
+Tap Mo for his menu: your status for today, a search box (pages, routines, exercises, habits and typed commands like “call mum”), buttons for every page and quick actions — +1 water, add a task, start focus, start your workout or next programme session, new note, scan food, read the briefing, your week and the Locker. Dress him up with outfits from the Locker; on Christmas, Halloween and your birthday he dresses up by himself.
 
 ## Spotify
 

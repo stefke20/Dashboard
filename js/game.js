@@ -64,6 +64,17 @@
       focus: store.get('focus').sessions.length,
       fast16: fasts.some((f) => fastHours(f) >= 16) ? 1 : 0, fasts: fasts.filter((f) => fastHours(f) >= f.goal).length,
       boardDone: (store.get('board').cards || []).filter((c) => c.doneAt).length,
+      boardCards: (store.get('board').cards || []).length,
+      notes: (store.get('notes').list || []).length,
+      early10: log.filter((l) => hour(l) < 8).length,
+      lunch: log.some((l) => hour(l) >= 12 && hour(l) < 14) ? 1 : 0,
+      weekendBoth: (() => { const set = new Set(log.map((l) => l.date)); return [...set].some((d) => PD.parseKey(d).getDay() === 6 && set.has(PD.shiftKey(d, 1))) ? 1 : 0; })(),
+      routines: new Set(log.map((l) => l.name)).size,
+      stravaN: (store.get('strava').activities || []).length,
+      focusMin: store.get('focus').sessions.reduce((s, x) => s + (x.minutes || 0), 0),
+      fastMax: Math.floor(Math.max(0, ...fasts.map(fastHours))),
+      moodDays: Object.values(store.get('journal') || {}).filter((j) => j?.mood).length,
+      badgesUnlocked: Object.keys(G().unlocked || {}).length,
       level: xp.level,
     };
   }
@@ -101,6 +112,30 @@
     ['level-5', '⭐', 'Rising star', 'Reach level 5', 'silver', 'Levels', 'level', 5],
     ['level-10', '👑', 'Royalty', 'Reach level 10', 'gold', 'Levels', 'level', 10],
     ['level-20', '🐉', 'Legend', 'Reach level 20', 'epic', 'Levels', 'level', 20],
+    // ---- second wave ----
+    ['two-hundred', '🏟️', 'Double century', 'Finish 200 workouts', 'epic', 'Training', 'workouts', 200],
+    ['weekend-warrior', '🛡️', 'Weekend warrior', 'Work out on a Saturday and the Sunday after', 'bronze', 'Training', 'weekendBoth', 1],
+    ['lunch-break', '🥪', 'Lunch break', 'Start a workout between 12:00 and 14:00', 'bronze', 'Training', 'lunch', 1],
+    ['variety', '🎨', 'Mix it up', 'Do 5 different routines', 'silver', 'Training', 'routines', 5],
+    ['early-ten', '🌄', 'Morning person', '10 workouts before 8:00', 'silver', 'Training', 'early10', 10],
+    ['streak-14', '🌩️', 'Lightning streak', 'Work out 14 days in a row', 'epic', 'Training', 'streak', 14],
+    ['tri-grad', '📜', 'Triple graduate', 'Complete 3 programmes', 'epic', 'Training', 'programmes', 3],
+    ['inferno', '🌡️', 'Inferno', 'Burn 20,000 kcal in workouts', 'epic', 'Training', 'kcal', 20000],
+    ['strava-10', '📡', 'Tracked', '10 activities on Strava', 'bronze', 'Strava', 'stravaN', 10],
+    ['strava-25', '🏔️', 'Explorer', '25 activities on Strava', 'silver', 'Strava', 'stravaN', 25],
+    ['habit-100', '💎', 'Diamond habit', '100-day streak on any habit', 'epic', 'Habits', 'habitBest', 100],
+    ['mood-30', '🌈', 'In touch', 'Log your mood on 30 days', 'silver', 'Habits', 'moodDays', 30],
+    ['water-50', '🐳', 'Whale', 'Hit your water goal on 50 days', 'gold', 'Food', 'water', 50],
+    ['logger-100', '📚', 'Food historian', 'Log your food on 100 days', 'gold', 'Food', 'foodDays', 100],
+    ['focus-hours', '🎧', 'In the zone', '10 hours of focus sessions', 'silver', 'Mind', 'focusMin', 600],
+    ['focus-100', '🧩', 'Centred', 'Finish 100 focus sessions', 'epic', 'Mind', 'focus', 100],
+    ['fast-18', '🌙', 'Night fast', 'Complete an 18-hour fast', 'silver', 'Mind', 'fastMax', 18],
+    ['note-taker', '🗒️', 'Note taker', 'Write 10 notes', 'bronze', 'Board', 'notes', 10],
+    ['planner', '🗂️', 'Planner', 'Create 20 cards on your board', 'bronze', 'Board', 'boardCards', 20],
+    ['board-100', '🚀', 'Productivity machine', 'Move 100 cards to Done', 'epic', 'Board', 'boardDone', 100],
+    ['level-15', '🦸', 'Hero', 'Reach level 15', 'gold', 'Levels', 'level', 15],
+    ['level-30', '🌌', 'Mythic', 'Reach level 30', 'epic', 'Levels', 'level', 30],
+    ['collector', '🧸', 'Collector', 'Unlock 25 badges', 'gold', 'Levels', 'badgesUnlocked', 25],
   ].map(([id, icon, name, desc, tier, cat, key, target]) => ({ id, icon, name, desc, tier, cat, key, target }));
 
   function state() {
@@ -122,7 +157,8 @@
     store.save('game');
     if (quiet) { if (fresh.length && !silent) PD.rewards?.announce(); return; }
     if (leveled) queue.push({ type: 'level', xp });
-    fresh.forEach((b) => queue.push({ type: 'badge', b }));
+    fresh.slice(0, 3).forEach((b) => queue.push({ type: 'badge', b }));
+    if (fresh.length > 3) setTimeout(() => PD.toast(`🏆 +${fresh.length - 3} more badges unlocked — see Achievements`), 1000);
     next();
   }
 
@@ -170,7 +206,7 @@
       <div class="game">
         <div class="level-medal" title="Level ${xp.level}"><b>${xp.level}</b></div>
         <div class="game-main">
-          <div class="game-top"><h2>${esc(xp.title)} <span class="muted small">· level ${xp.level}</span></h2>${xp.today ? `<span class="pill small mint">+${xp.today} XP today</span>` : ''}</div>
+          <div class="game-top"><h2>${esc(xp.title)} <span class="muted small">· level ${xp.level}</span></h2>${PD.rewards?.title() ? `<span class="title-pill">🏷️ ${esc(PD.rewards.title())}</span>` : ''}${xp.today ? `<span class="pill small mint">+${xp.today} XP today</span>` : ''}</div>
           <div class="xp-bar"><i style="width:${pct}%"></i></div>
           <span class="small muted"><b data-count="${xp.total}">0</b> XP · ${fmt.num(xp.to - xp.total)} XP to level ${xp.level + 1}</span>
         </div>

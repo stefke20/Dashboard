@@ -256,7 +256,7 @@
     el.innerHTML = `
       <div class="card-head"><h2>Up next</h2><a class="muted small" href="#calendar">Calendar →</a></div>
       ${items.length ? `<ul class="agenda">${items.map((e) => `
-        <li><span class="dot ${PD.calendar.TYPES[e.type].cls}"${e.color && e.type === 'google' ? ` style="--ev:${esc(e.color)}"` : ''}></span>
+        <li><span class="dot ${PD.calendar.TYPES[e.type].cls}"${e.color && e.type === 'google' ? ` style="--ev:${esc(e.color)}"` : e.type === 'card' ? ` style="--ev:var(--accent-${esc(e.label || 'violet')}-ink)"` : ''}></span>
           <span class="agenda-title">${esc(e.displayTitle)}</span>
           <span class="muted small">${esc(PD.relDay(e.occursOn))}${e.time ? ` · ${esc(e.time)}` : ''}</span></li>`).join('')}</ul>`
         : '<p class="empty">Nothing in the next two weeks. Add events, tasks and birthdays in the Calendar tab.</p>'}`;
@@ -335,7 +335,7 @@
         <button class="hero-btn" id="heroCustomize" title="Customise home" aria-label="Customise home"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg></button>
       </div>
       ${PD.seasons.heroFx()}
-      <p class="eyebrow">${esc(greeting(now.getHours()))}${name ? `, ${esc(name)}` : ''} ${PD.seasons.special() ? `${PD.seasons.special().emoji} · ${esc(PD.seasons.special().text)}` : '👋'}</p>
+      <p class="eyebrow">${esc(greeting(now.getHours()))}${name ? `, ${esc(name)}` : ''}${PD.rewards.title() ? ` <span class="title-pill">${esc(PD.rewards.title())}</span>` : ''} ${PD.seasons.special() ? `${PD.seasons.special().emoji} · ${esc(PD.seasons.special().text)}` : '👋'}</p>
       <h1 class="hero-day">${esc(fmt.weekday(now, 'long'))}</h1>
       <p class="hero-date">${esc(fmt.date(now, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
       <div class="hero-meta">

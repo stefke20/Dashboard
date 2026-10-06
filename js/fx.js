@@ -27,7 +27,7 @@
   }
 
   /** Confetti burst on a full-screen canvas. The style can be changed with an unlocked reward. */
-  const EMOJI = { emoji: ['💪', '🔥', '⭐', '🏆', '⚡'], fruit: ['🍎', '🥑', '🍓', '🍌', '🥕', '🍇'] };
+  const EMOJI = { emoji: ['💪', '🔥', '⭐', '🏆', '⚡'], fruit: ['🍎', '🥑', '🍓', '🍌', '🥕', '🍇'], lightning: ['⚡', '⚡', '✨', '⚡'] };
   function star(ctx, r) {
     ctx.beginPath();
     for (let i = 0; i < 10; i++) { const a = (i * Math.PI) / 5 - Math.PI / 2; const rr = i % 2 ? r * 0.45 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
@@ -41,6 +41,7 @@
   function confetti({ count = 140, origin = { x: 0.5, y: 0.35 }, style } = {}) {
     if (reduce()) return;
     style = style || PD.rewards?.equipped('confetti') || 'classic';
+    PD.mole?.cheer();
     const c = document.createElement('canvas');
     c.className = 'confetti'; document.body.appendChild(c);
     const ctx = c.getContext('2d'); const dpr = window.devicePixelRatio || 1;
@@ -80,12 +81,16 @@
 
   /* ---------- audio ---------- */
   let audio;
+  // sound packs (unlockable): oscillator shape, length and loudness
+  const PACKS = { default: ['sine', 1, 1], arcade: ['square', 0.8, 0.45], '8bit': ['square', 0.6, 0.4], chimes: ['triangle', 2.6, 1.1] };
   function beep(freq = 880, dur = 0.12, vol = 0.18) {
+    const [wave, len, loud] = PACKS[PD.rewards?.equipped('sound')] || PACKS.default;
+    dur *= len; vol *= loud;
     try {
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
       if (audio.state === 'suspended') audio.resume();
       const o = audio.createOscillator(); const g = audio.createGain();
-      o.type = 'sine'; o.frequency.value = freq;
+      o.type = wave; o.frequency.value = freq;
       g.gain.setValueAtTime(0, audio.currentTime);
       g.gain.linearRampToValueAtTime(vol, audio.currentTime + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
@@ -93,7 +98,12 @@
     } catch { /* audio not available */ }
   }
   const chime = () => { beep(660, 0.14); setTimeout(() => beep(990, 0.22), 140); };
-  const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.25, 0.2), i * 140));
+  const FANFARES = { arcade: [392, 523, 659, 784, 1047, 1319], '8bit': [523, 523, 784, 1047], chimes: [880, 1175, 1568, 1760] };
+  const fanfare = () => {
+    const notes = FANFARES[PD.rewards?.equipped('sound')] || [523, 659, 784, 1047];
+    notes.forEach((f, i) => setTimeout(() => beep(f, 0.25, 0.2), i * (notes.length > 4 ? 90 : 140)));
+    PD.mole?.cheer();
+  };
 
   function speak(text) {
     try {

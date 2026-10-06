@@ -9,9 +9,11 @@
     holiday: { label: 'Holiday', cls: 'sky', icon: '🇧🇪' },
     workout: { label: 'Workout', cls: 'peach', icon: '🏋️' },
     google: { label: 'Google', cls: 'g', icon: '📅' },
+    card: { label: 'Board card', cls: 'bcard', icon: '📋' },
   };
   /** Google events carry their calendar's own colour. */
-  const col = (o) => (o.color && o.type === 'google' ? ` style="--ev:${esc(o.color)}"` : '');
+  const col = (o) => (o.color && o.type === 'google' ? ` style="--ev:${esc(o.color)}"`
+    : o.type === 'card' ? ` style="--ev:var(--accent-${esc(o.label || 'violet')}-ink)"` : '');
 
   let viewMonth = new Date(); viewMonth.setDate(1);
   let selected = todayKey();
@@ -90,17 +92,18 @@
     out.push(...PD.gcal.eventsBetween(from, to));
     out.push(...(PD.programs?.planned(from, to) || []));
     out.push(...(PD.board?.dueBetween(from, to) || []));
-    const order = { holiday: 0, birthday: 1, google: 2, event: 2, workout: 3, task: 4 };
+    const order = { holiday: 0, birthday: 1, google: 2, event: 2, workout: 3, task: 4, card: 4 };
     return out.sort((a, b) => a.occursOn.localeCompare(b.occursOn) || (a.time || '').localeCompare(b.time || '') || order[a.type] - order[b.type]);
   }
 
   function upcoming(days = 14) {
     const t = todayKey();
     const overdue = store.get('events').filter((e) => e.type === 'task' && !e.done && e.date < t)
-      .map((e) => ({ ...e, occursOn: e.date, displayTitle: `${e.title} (overdue)` }));
+      .map((e) => ({ ...e, occursOn: e.date, displayTitle: `${e.title} (overdue)` }))
+      .concat(PD.board?.overdue() || []);
     const seen = new Set(); // only the next occurrence of a repeating event
     const next = between(t, PD.shiftKey(t, days)).filter((e) => {
-      if (e.type === 'task' && e.done) return false;
+      if ((e.type === 'task' || e.type === 'card') && e.done) return false;
       const k = e.gid || e.id; // multi-day Google events: show once
       if (seen.has(k) || (e.type === 'workout' && e.readonly && !e.startable)) return false;
       seen.add(k); return true;
@@ -144,7 +147,7 @@
               const k = keyOf(d); const items = byDay[k] || [];
               return `<button class="cal-cell${d.getMonth() !== m ? ' out' : ''}${k === t ? ' today' : ''}${k === selected ? ' sel' : ''}" data-k="${k}" aria-label="${esc(fmt.date(d))}, ${items.length} items">
                 <span class="cal-num">${d.getDate()}</span>
-                <span class="cal-items">${items.slice(0, 3).map((o) => `<span class="cal-chip ${TYPES[o.type].cls}${o.done && o.type === 'task' ? ' done' : ''}"${col(o)}>${esc(o.displayTitle)}</span>`).join('')}
+                <span class="cal-items">${items.slice(0, 3).map((o) => `<span class="cal-chip ${TYPES[o.type].cls}${o.done && (o.type === 'task' || o.type === 'card') ? ' done' : ''}"${col(o)}>${esc(o.displayTitle)}</span>`).join('')}
                 ${items.length > 3 ? `<span class="muted small">+${items.length - 3} more</span>` : ''}
                 ${items.length ? `<span class="cal-dots">${items.slice(0, 4).map((o) => `<i class="dot ${TYPES[o.type].cls}"${col(o)}></i>`).join('')}</span>` : ''}</span>
               </button>`;
@@ -176,8 +179,8 @@
     const ty = TYPES[o.type];
     return `<li class="ev-row" data-id="${o.id}">
       ${o.type === 'task' ? `<input type="checkbox" class="ev-done" data-id="${o.id}" ${o.done ? 'checked' : ''} aria-label="Done">` : `<span class="ev-icon" aria-hidden="true">${ty.icon}</span>`}
-      ${o.link ? `<a class="ev-main" href="${esc(o.link)}" target="_blank" rel="noopener">` : `<button class="ev-main" ${o.readonly ? 'disabled' : ''} data-edit="${o.id}">`}
-        <span class="ev-title${o.done && o.type === 'task' ? ' strike' : ''}">${esc(o.displayTitle)}</span>
+      ${o.link ? `<a class="ev-main" href="${esc(o.link)}" target="_blank" rel="noopener">` : o.cardId ? `<button class="ev-main" data-card="${esc(o.cardId)}" title="Open card">` : `<button class="ev-main" ${o.readonly ? 'disabled' : ''} data-edit="${o.id}">`}
+        <span class="ev-title${o.done && (o.type === 'task' || o.type === 'card') ? ' strike' : ''}">${esc(o.displayTitle)}</span>
         <span class="muted small">${showDate ? esc(PD.relDay(o.occursOn)) : ty.label}${o.time ? ` · ${esc(o.time)}` : ''}${o.repeat && o.repeat !== 'none' && o.type !== 'birthday' ? ` · repeats ${esc(o.repeat)}` : ''}</span>
         ${o.notes ? `<span class="small ev-notes">${esc(o.notes)}</span>` : ''}
       ${o.link ? '</a>' : '</button>'}
@@ -186,6 +189,7 @@
   }
 
   function bindRows(root) {
+    $$('[data-card]', root).forEach((b) => (b.onclick = () => PD.board.openCard(b.dataset.card)));
     $$('[data-wstart]', root).forEach((b) => (b.onclick = () => (b.dataset.wstart === 'program' ? PD.programs.startNext() : PD.workout.start(b.dataset.wstart))));
     $$('[data-edit]', root).forEach((b) => (b.onclick = () => {
       const ev = store.get('events').find((e) => e.id === b.dataset.edit);

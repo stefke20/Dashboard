@@ -64,6 +64,7 @@
   PD.sync.init();
   setTimeout(() => PD.game.check(), 1500); // first run adopts existing progress quietly
   PD.seasons.greet();
+  PD.mole.init();
 })(window.PD);
 
 /* Installable app (PWA): service worker + install prompt. */

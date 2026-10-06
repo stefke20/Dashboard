@@ -188,7 +188,7 @@
       const f = $('#kForm', body); let label = c.label || '';
       $$('.color-pick .sw', body).forEach((b) => (b.onclick = () => { label = b.dataset.col; $$('.color-pick .sw', body).forEach((x) => x.classList.toggle('sel', x === b)); }));
       $('[data-cancel]', body).onclick = close;
-      $('#kDel', body).onclick = () => { B().cards = B().cards.filter((x) => x.id !== id); store.save('board'); close(); renderBoard(); };
+      $('#kDel', body).onclick = () => { B().cards = B().cards.filter((x) => x.id !== id); store.save('board'); close(); refresh(); };
       const g = $('#kGoogle', body); if (g) g.onclick = () => window.open(PD.gcalLink({ title: c.title, date: c.due, details: c.notes, allDay: true }), '_blank', 'noopener');
       f.onsubmit = (e) => {
         e.preventDefault();
@@ -196,7 +196,7 @@
         Object.assign(c, { title: f.title.value.trim(), col: f.col.value, due: f.due.value, notes: f.notes.value, label });
         c.doneAt = isDoneCol(c.col) ? (c.doneAt || new Date().toISOString()) : null;
         if (!wasDone && c.doneAt) PD.toast('Done ✓ +3 XP');
-        store.save('board'); close(); renderBoard();
+        store.save('board'); close(); refresh();
       };
     });
   }
@@ -243,12 +243,19 @@
     });
   }
 
-  /** Cards with a due date appear in the calendar and under "Up next". */
+  /** Cards with a due date appear in the calendar (in their label colour) and under "Up next". */
+  const asEvent = (c, k) => ({
+    id: `k-${c.id}`, cardId: c.id, type: 'card', label: c.label || 'violet', done: !!c.doneAt, readonly: true, date: c.due, occursOn: k,
+    displayTitle: `${c.title}${!c.doneAt && c.due < todayKey() ? ' (overdue)' : ''}`, notes: B().columns.find((x) => x.id === c.col)?.name || '',
+  });
   function dueBetween(from, to) {
-    return (B().cards || []).filter((c) => c.due && !c.doneAt && c.due >= from && c.due <= to).map((c) => ({
-      id: `k-${c.id}`, type: 'task', readonly: true, date: c.due, occursOn: c.due, displayTitle: `📋 ${c.title}`, notes: B().columns.find((x) => x.id === c.col)?.name || '',
-    }));
+    return (B().cards || []).filter((c) => c.due && c.due >= from && c.due <= to).map((c) => asEvent(c, c.due));
   }
+  /** Unfinished cards whose due date has passed (shown first under "Up next"). */
+  const overdue = () => (B().cards || []).filter((c) => c.due && !c.doneAt && c.due < todayKey()).map((c) => asEvent(c, c.due));
+
+  /** After editing a card from another page (calendar, home), refresh whatever is visible. */
+  const refresh = () => (PD.app.current() === 'board' && $('#kboard') ? renderBoard() : PD.app.renderCurrent());
 
   /* =================== notes =================== */
   /** Tiny, safe markdown: headings, checklists, bullets, bold/italic, links. */
@@ -336,5 +343,5 @@
     }, 'wide');
   }
 
-  PD.board = { render, dueBetween, newNote: () => { view = 'notes'; location.hash = '#board'; setTimeout(() => noteEditor(), 150); } };
+  PD.board = { render, dueBetween, overdue, openCard: cardEditor, newNote: () => { view = 'notes'; location.hash = '#board'; setTimeout(() => noteEditor(), 150); } };
 })(window.PD);

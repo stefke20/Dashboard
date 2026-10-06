@@ -11,6 +11,11 @@
     skin: { label: 'Workout player skins', icon: '🏋️', hint: 'The background of the workout player while you train.' },
     trail: { label: 'Cursor trails', icon: '🖱️', hint: 'A little trail behind your mouse (on computers).' },
     frame: { label: 'Level frames', icon: '🏅', hint: 'A frame around your level medal.' },
+    outfit: { label: 'Mole outfits', icon: '🐾', hint: 'Dress up Mo, the dashboard mole in the corner.' },
+    sound: { label: 'Sound packs', icon: '🔊', hint: 'The beeps, chimes and fanfares of timers and celebrations.' },
+    font: { label: 'Fonts', icon: '🔤', hint: 'The lettering of the whole dashboard.' },
+    cards: { label: 'Card styles', icon: '🪟', hint: 'How the cards on every page look.' },
+    title: { label: 'Titles', icon: '🏷️', hint: 'A title shown with your name and your level.' },
   };
 
   // [id, type, name, unlocked by badge, preview colours / icon]
@@ -46,6 +51,30 @@
     ['comet', 'trail', 'Comet', 'shipper', '☄️'],
     ['flame', 'frame', 'Flame frame', 'habit-month', '🔥'],
     ['legend', 'frame', 'Legend frame', 'level-20', '👑'],
+    // ---- second wave ----
+    ['sunrise', 'theme', 'Sunrise', 'early-ten', ['#ff7e5f', '#feb47b', '#ffd194']],
+    ['lightning', 'confetti', 'Lightning', 'streak-14', '⚡'],
+    ['borealis', 'skin', 'Borealis', 'strava-25', ['#001d2e', '#00a676', '#7b2ff7']],
+    ['hearts', 'trail', 'Heart trail', 'focus-100', '💗'],
+    ['cape', 'outfit', 'Superhero cape', 'two-hundred', '🦸'],
+    ['headband', 'outfit', 'Sweatband', 'weekend-warrior', '🎽'],
+    ['sunglasses', 'outfit', 'Cool shades', 'lunch-break', '🕶️'],
+    ['headphones', 'outfit', 'Headphones', 'focus-hours', '🎧'],
+    ['party', 'outfit', 'Party hat', 'note-taker', '🥳'],
+    ['crown', 'outfit', 'Crown', 'level-15', '👑'],
+    ['wizard', 'outfit', 'Wizard hat', 'collector', '🧙'],
+    ['8bit', 'sound', '8-bit', 'variety', '👾'],
+    ['arcade', 'sound', 'Arcade', 'strava-10', '🕹️'],
+    ['chimes', 'sound', 'Wind chimes', 'water-50', '🎐'],
+    ['rounded', 'font', 'Rounded', 'planner', 'Aa'],
+    ['mono', 'font', 'Monospace', 'board-100', '{ }'],
+    ['serif', 'font', 'Editorial serif', 'logger-100', 'Ff'],
+    ['clay', 'cards', 'Clay', 'tri-grad', '🧱'],
+    ['glass', 'cards', 'Glass', 'mood-30', '🪟'],
+    ['outline', 'cards', 'Outline', 'fast-18', '⬜'],
+    ['inferno', 'title', 'Inferno', 'inferno', '🔥'],
+    ['habit-legend', 'title', 'Habit Legend', 'habit-100', '💎'],
+    ['mythic-mole', 'title', 'Mythic Mole', 'level-30', '🌌'],
   ].map(([id, type, name, badge, preview]) => ({ key: `${type}:${id}`, id, type, name, badge, preview }));
 
   const badgeOf = (r) => PD.game.state().badges.find((b) => b.id === r.badge);
@@ -65,6 +94,8 @@
     else if (r) { const g = G(); g.equipped = { ...(g.equipped || {}), [r.type]: r.id }; store.save('game'); }
     apply();
     if (r?.type === 'confetti') PD.fx.confetti({ count: 120 });
+    if (r?.type === 'sound') PD.fx.fanfare();
+    if (r?.type === 'outfit') PD.mole?.cheer();
     if (r) PD.toast(`${TYPES[r.type].icon} ${r.name} equipped`);
   }
   function unequip(type) {
@@ -74,10 +105,27 @@
   }
 
   /* ---------- applying rewards ---------- */
+  const FONTS = {
+    rounded: 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap',
+    mono: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap',
+    serif: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&display=swap',
+  };
+  function loadFont(id) {
+    if (!FONTS[id] || document.querySelector(`link[data-font="${id}"]`)) return;
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = FONTS[id]; l.dataset.font = id;
+    document.head.appendChild(l);
+  }
+  /** Equipped title (e.g. "Habit Legend") or ''. */
+  const title = () => REWARDS.find((r) => r.type === 'title' && r.id === equipped('title'))?.name || '';
+
   function apply() {
-    document.documentElement.dataset.frame = equipped('frame');
-    document.documentElement.dataset.skin = equipped('skin');
+    const root = document.documentElement;
+    root.dataset.frame = equipped('frame');
+    root.dataset.skin = equipped('skin');
+    root.dataset.font = equipped('font'); loadFont(equipped('font'));
+    root.dataset.cards = equipped('cards');
     trail(equipped('trail'));
+    PD.mole?.dress();
     if (PD.app?.current() === 'home') PD.home.render();
   }
 
@@ -108,6 +156,7 @@
     d.className = `trail trail-${trailType}`;
     d.style.left = `${e.clientX}px`; d.style.top = `${e.clientY}px`;
     if (trailType === 'sparkle') d.textContent = Math.random() > 0.5 ? '✦' : '✧';
+    if (trailType === 'hearts') d.textContent = '💗';
     if (trailType === 'rainbow') d.style.background = TRAIL_COLORS[Math.floor(now / 60) % TRAIL_COLORS.length];
     document.body.appendChild(d); alive++;
     setTimeout(() => { d.remove(); alive--; }, 800);
@@ -115,6 +164,7 @@
 
   /* ---------- Locker ---------- */
   function preview(r) {
+    if (r.type === 'font') return `<span class="rw-icon rw-font font-${r.id}">${esc(r.preview)}</span>`;
     if (Array.isArray(r.preview)) return `<span class="rw-swatch">${r.preview.map((c) => `<i style="background:${c}"></i>`).join('')}</span>`;
     return `<span class="rw-icon">${esc(r.preview)}</span>`;
   }
@@ -156,5 +206,5 @@
     if (n) setTimeout(() => PD.toast(`🎁 Your badges unlocked ${n} reward${n === 1 ? '' : 's'} — open the Locker in My workout`), 2500);
   }
 
-  PD.rewards = { REWARDS, TYPES, forBadge, isUnlocked, equipped, equip, unequip, apply, heroFx, locker, announce, themeIds };
+  PD.rewards = { REWARDS, TYPES, forBadge, isUnlocked, equipped, equip, unequip, apply, heroFx, locker, announce, themeIds, title };
 })(window.PD);

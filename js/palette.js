@@ -106,5 +106,5 @@
   });
   document.getElementById('paletteBtn')?.addEventListener('click', open);
 
-  PD.palette = { open, close };
+  PD.palette = { open, close, commands };
 })(window.PD);
