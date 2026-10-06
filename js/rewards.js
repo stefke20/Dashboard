@@ -11,7 +11,7 @@
     skin: { label: 'Workout player skins', icon: '🏋️', hint: 'The background of the workout player while you train.' },
     trail: { label: 'Cursor trails', icon: '🖱️', hint: 'A little trail behind your mouse (on computers).' },
     frame: { label: 'Level frames', icon: '🏅', hint: 'A frame around your level medal.' },
-    outfit: { label: 'Mole outfits', icon: '🐾', hint: 'Dress up Guac, the dashboard mole in the corner.' },
+    outfit: { label: 'Mole outfits', icon: '🐾', hint: 'Dress up Ester, the Child Mole in the corner.' },
     sound: { label: 'Sound packs', icon: '🔊', hint: 'The beeps, chimes and fanfares of timers and celebrations.' },
     font: { label: 'Fonts', icon: '🔤', hint: 'The lettering of the whole dashboard.' },
     cards: { label: 'Card styles', icon: '🪟', hint: 'How the cards on every page look.' },

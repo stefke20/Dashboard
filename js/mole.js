@@ -1,7 +1,7 @@
-/* Guac the mole: the dashboard mascot in the bottom-right corner.
+/* Ester the Child Mole: the dashboard mascot in the bottom-right corner.
    Idle breathing, blinking, eyes that follow your pointer, a wave on hover, sleeping at night,
    cheering at celebrations, digging when you switch pages and now and then burrowing out of sight.
-   Tap him for navigation & quick actions — and don't tap him five times in a row… */
+   Tap for navigation & quick actions — and don't tap five times in a row… */
 (function (PD) {
   const { esc, $, $$, store, todayKey } = PD;
 
@@ -96,7 +96,6 @@
 
   function drawMenu(q = '') {
     const m = $('#moleMenu');
-    const name = store.get('settings').name;
     if (mode === 'task') {
       m.innerHTML = `<div class="mo-head"><b>What do you need to do? ✍️</b><button class="mo-x" data-mo-back aria-label="Back">←</button></div>
         <form class="mo-search" id="moTask"><input placeholder="e.g. Call the garage" maxlength="140" aria-label="New task"><button class="btn sm">Add</button></form>
@@ -108,7 +107,7 @@
     }
     const results = q ? PD.palette.commands(q).slice(0, 7) : [];
     m.innerHTML = `
-      <div class="mo-head"><b>Hi${name ? ` ${esc(name)}` : ''}! I'm Guac 🐾</b><button class="mo-x" data-mo-close aria-label="Close">✕</button></div>
+      <div class="mo-head"><b>Child Mole Ester 🐾</b><button class="mo-x" data-mo-close aria-label="Close">✕</button></div>
       <p class="mo-status small">${esc(status())}</p>
       <form class="mo-search" id="moSearch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input placeholder="Where to? Or type a task, food, routine…" value="${esc(q)}" aria-label="Search or command" autocomplete="off"></form>
@@ -153,13 +152,13 @@
   const dig = () => play('dig', 700);
   const busy = () => wrap.classList.contains('open') || wrap.classList.contains('sleep') || document.hidden || PD.fx.reduce();
 
-  /** Now and then Guac burrows into his molehill and pops right back out. */
+  /** Now and then Ester burrows into the molehill and pops right back out. */
   function burrow() {
     if (!busy()) play('burrow', 2300);
     clearTimeout(burrow.t); burrow.t = setTimeout(burrow, 45e3 + Math.random() * 60e3);
   }
 
-  /* ---------- easter egg: tap Guac 5× quickly and he throws mud at the screen ---------- */
+  /* ---------- easter egg: tap Ester 5× quickly and mud gets thrown at the screen ---------- */
   const GRUMBLE = ['Hey!', 'Hey! That tickles 😠', 'Stop it…', 'Last warning! 😤'];
   let taps = [];
   function onTap() {
@@ -230,7 +229,7 @@
   }
   function hideSpeech() { const s = $('#moleSay'); if (!s) return; s.classList.remove('show'); setTimeout(() => (s.hidden = true), 250); }
 
-  /** Once a day Guac says hello with the first line of your briefing. */
+  /** Once a day Ester says hello with the first line of your briefing. */
   function greet() {
     const k = `pd.mole.greet.${todayKey()}`;
     try { if (localStorage.getItem(k)) return; localStorage.setItem(k, '1'); } catch { return; }
@@ -248,8 +247,8 @@
     wrap = document.createElement('div');
     wrap.className = 'mole-wrap';
     wrap.innerHTML = `<div class="mole-say" id="moleSay" hidden></div>
-      <div class="mole-menu" id="moleMenu" hidden role="dialog" aria-label="Guac the mole — navigation and quick actions"></div>
-      <button class="mole-btn peek" aria-label="Guac the mole: navigation and quick actions" title="Hi, I'm Guac! Tap me">${svg()}</button>`;
+      <div class="mole-menu" id="moleMenu" hidden role="dialog" aria-label="Ester the Child Mole — navigation and quick actions"></div>
+      <button class="mole-btn peek" aria-label="Ester the Child Mole: navigation and quick actions" title="Hi, I'm Ester the Child Mole! Tap me">${svg()}</button>`;
     document.body.appendChild(wrap);
     $('.mole-btn', wrap).onclick = onTap;
     $('#moleSay', wrap).onclick = () => { hideSpeech(); open(); };

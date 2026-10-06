@@ -67,13 +67,13 @@ Every badge unlocks a reward you can switch on in the **Locker** (🎁 button in
 
 54 badges in total. When you earn a badge, its popup has a **Use it** button. Unlocked themes also appear in *Settings → Colour scheme*; locked ones show how to earn them.
 
-## Guac the mole 🐾
+## Ester the Child Mole 🐾
 
-Guac lives in the bottom-right corner. He peeks out of his molehill, breathes and blinks, follows your mouse with his eyes, waves when you hover, digs when you switch pages, cheers when you celebrate, now and then burrows into his molehill and pops right back out, and sleeps at night (23:00–06:00). Once a day he greets you with the first line of your briefing.
+Ester lives in the bottom-right corner, peeking out of the molehill, breathing and blinking, following your mouse with both eyes, waving when you hover, digging when you switch pages, cheering when you celebrate, now and then burrowing into the molehill and popping right back out, and sleeping at night (23:00–06:00). Once a day Ester greets you with the first line of your briefing.
 
-Tap Guac for his menu: your status for today, a search box (pages, routines, exercises, habits and typed commands like “call mum”), buttons for every page and quick actions — +1 water, add a task, start focus, start your workout or next programme session, new note, scan food, read the briefing, your week and the Locker. Dress him up with outfits from the Locker; on Christmas, Halloween and your birthday he dresses up by himself.
+Tap Ester for the menu (“Child Mole Ester”): your status for today, a search box (pages, routines, exercises, habits and typed commands like “call mum”), buttons for every page and quick actions — +1 water, add a task, start focus, start your workout or next programme session, new note, scan food, read the briefing, your week and the Locker. Dress Ester up with outfits from the Locker; on Christmas, Halloween and your birthday Ester dresses up without any help.
 
-Don't tap him five times in a row… he gets grumpy and throws mud at your screen (it washes off after a few seconds).
+Don't tap Ester five times in a row… grumpy moles throw mud at your screen (it washes off after a few seconds).
 
 ## Spotify
 
