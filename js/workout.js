@@ -94,6 +94,9 @@
         </div>
       </div>
 
+      <div class="section-head"><h2 class="section-title">Programmes</h2><button class="btn sm ghost" id="progNew">+ Build a programme</button></div>
+      <div id="programs"></div>
+
       <h2 class="section-title">My routines</h2>
       <div class="routines" id="routines"></div>
 
@@ -113,7 +116,8 @@
       </div>
       <div class="ex-grid" id="exGrid"></div>`;
 
-    renderRoutines(); renderLibrary();
+    PD.programs.render($('#programs')); renderRoutines(); renderLibrary();
+    $('#progNew').onclick = () => PD.programs.builder();
     $('#wkNew').onclick = () => editor();
     $('#wkPrefs').onclick = prefsModal;
     $('#wkGoal').onclick = prefsModal;
@@ -497,11 +501,12 @@
     return steps;
   }
 
-  async function start(routineId) {
-    const r = W().routines.find((x) => x.id === routineId);
+  /** Start a saved routine (by id) or a generated one (object), e.g. a programme session. */
+  async function start(routine, meta = {}) {
+    const r = typeof routine === 'object' ? routine : W().routines.find((x) => x.id === routine);
     if (!r || !r.items.length) return;
     const steps = buildSteps(r);
-    P = { r, steps, i: 0, elapsed: 0, total: 0, running: true, last: performance.now(), workSec: 0, kcal: 0, done: 0, said: {}, startedAt: new Date() };
+    P = { r, meta, steps, i: 0, elapsed: 0, total: 0, running: true, last: performance.now(), workSec: 0, kcal: 0, done: 0, said: {}, startedAt: new Date() };
     const el = document.createElement('div');
     el.className = 'player'; el.id = 'player'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', `Workout: ${r.name}`);
     document.body.appendChild(el); document.body.classList.add('no-scroll');
@@ -631,7 +636,7 @@
     P.finished = true;
     const total = workSteps().length;
     const entry = {
-      id: PD.uid(), routineId: P.r.id, name: P.r.name, emoji: P.r.emoji, date: todayKey(), start: P.startedAt.toISOString(),
+      id: PD.uid(), routineId: P.r.id, ...(P.meta.program ? { program: P.meta.program, session: P.meta.session } : {}), name: P.r.name, emoji: P.r.emoji, date: todayKey(), start: P.startedAt.toISOString(),
       duration: Math.round(P.total), active: Math.round(P.workSec), kcal: Math.round(P.kcal), exercises: P.done, total, partial: partial && P.done < total, rating: null,
     };
     const strava = store.get('strava');
@@ -660,13 +665,16 @@
     $$('.pl-rate button', el).forEach((b) => (b.onclick = () => { entry.rating = +b.dataset.r; $$('.pl-rate button', el).forEach((x) => x.classList.toggle('sel', x === b)); }));
     $('#plDiscard').onclick = () => { if (confirm('Discard this workout?')) closePlayer(); };
     $('#plSave').onclick = async () => {
-      const w = W(); w.log.push(entry); store.save('workouts');
+      const w = W(); w.log.push(entry);
+      const programDone = P.meta.program ? PD.programs.complete(P.meta.program, P.meta.session, entry) : false;
+      store.save('workouts');
       if ($('#toStrava')?.checked) {
         try { await PD.health.uploadWorkout(entry); PD.toast('Saved and uploaded to Strava ✅'); } catch (err) { PD.toast(err.message); }
       } else PD.toast('Workout saved — see it in Health 💪');
       const st = stats();
       closePlayer();
-      if (st.weekCount === st.goal) setTimeout(() => { PD.fx.confetti({ origin: { x: 0.5, y: 0.2 } }); PD.toast('Weekly goal reached! 🎉'); }, 300);
+      if (programDone) setTimeout(() => { PD.fx.confetti({ count: 220 }); PD.toast(`Programme complete: ${programDone} 🏆`); }, 300);
+      else if (st.weekCount === st.goal) setTimeout(() => { PD.fx.confetti({ origin: { x: 0.5, y: 0.2 } }); PD.toast('Weekly goal reached! 🎉'); }, 300);
     };
   }
 
@@ -679,5 +687,5 @@
     if (PD.app.current() === 'workout') render(); else PD.app.renderCurrent();
   }
 
-  PD.workout = { render, start, stats, weeklyMinutes, estimate, catColor };
+  PD.workout = { render, start, stats, weeklyMinutes, estimate, catColor, exOf, fmtVal, routineFigs: (items) => items.slice(0, 5).map((it) => `<span title="${esc(exOf(it.ex).name)}">${X().figure(exOf(it.ex), { still: true })}</span>`).join('') };
 })(window.PD);

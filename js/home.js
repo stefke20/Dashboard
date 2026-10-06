@@ -255,7 +255,7 @@
     el.innerHTML = `
       <div class="card-head"><h2>Up next</h2><a class="muted small" href="#calendar">Calendar →</a></div>
       ${items.length ? `<ul class="agenda">${items.map((e) => `
-        <li><span class="dot ${PD.calendar.TYPES[e.type].cls}"></span>
+        <li><span class="dot ${PD.calendar.TYPES[e.type].cls}"${e.color && e.type === 'google' ? ` style="--ev:${esc(e.color)}"` : ''}></span>
           <span class="agenda-title">${esc(e.displayTitle)}</span>
           <span class="muted small">${esc(PD.relDay(e.occursOn))}${e.time ? ` · ${esc(e.time)}` : ''}</span></li>`).join('')}</ul>`
         : '<p class="empty">Nothing in the next two weeks. Add events, tasks and birthdays in the Calendar tab.</p>'}`;
@@ -370,12 +370,13 @@
         </div>
         <div class="home-col">
           <div class="card weather" id="weather"><div class="card-head"><h2>Weather</h2></div><div class="skeleton tall"></div></div>
+          <div class="card" id="air"><div class="card-head"><h2>Air &amp; pollen</h2></div><div class="skeleton"></div></div>
           <div class="card" id="agenda"></div>
           <div class="card" id="tasks"></div>
         </div>
       </div>`;
     renderHero(); renderTiles(); renderTasks(); renderAgenda();
-    loadWeather(); loadNews();
+    loadWeather(); loadNews(); PD.air.load();
     $('#newsRefresh').onclick = () => {
       store.get('settings').feeds.forEach((f) => localStorage.removeItem(`pd.cache.news.${f.id}`));
       loadNews();

@@ -36,7 +36,12 @@
 
   PD.store.migrate();
   PD.settings.applyTheme();
-  $('#openSettings').onclick = PD.settings.open;
+  $('#openSettings').onclick = () => PD.settings.open();
+  // live Google Calendar results arrive asynchronously: refresh what shows them
+  PD.gcal.onUpdate = () => {
+    if (current === 'calendar' && !$('#modal').open) PD.calendar.render();
+    if (current === 'home') PD.home.renderAgenda();
+  };
   $('#modal').addEventListener('click', (e) => {
     if (e.target.closest('[data-close]') || e.target === e.currentTarget) e.currentTarget.close();
   });
@@ -48,8 +53,39 @@
     else if (current === 'home' && Date.now() - hiddenAt > 30 * 60e3) route();
   });
 
-  // Finishes a Strava login redirect if there is one (synchronously rewrites the URL to #health first).
-  const redirect = PD.health.handleRedirect();
+  // Finishes a Strava or Google login redirect if there is one (each rewrites the URL synchronously first).
+  const redirects = [PD.health.handleRedirect(), PD.google.handleRedirect()];
   route();
-  redirect.then((handled) => { if (handled) route(); });
+  Promise.all(redirects).then((handled) => { if (handled.some(Boolean)) route(); });
+  PD.sync.init();
+})(window.PD);
+
+/* Installable app (PWA): service worker + install prompt. */
+(function (PD) {
+  let deferred = null;
+  const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ios = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { /* offline support unavailable */ }));
+  }
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; });
+  window.addEventListener('appinstalled', () => { deferred = null; PD.toast('Installed — find Daily on your home screen 🎉'); });
+  if (standalone()) document.documentElement.classList.add('standalone');
+
+  PD.pwa = {
+    standalone,
+    status() {
+      if (standalone()) return 'installed';
+      if (deferred) return 'prompt';
+      return ios() ? 'ios' : 'manual';
+    },
+    async install() {
+      if (!deferred) return false;
+      deferred.prompt();
+      const { outcome } = await deferred.userChoice;
+      deferred = null;
+      return outcome === 'accepted';
+    },
+  };
 })(window.PD);

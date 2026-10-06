@@ -65,6 +65,22 @@
     }
   }
 
+  /** Barcode → product from Open Food Facts → straight into the amount picker. */
+  async function lookupBarcode(code) {
+    PD.toast(`Looking up ${code}…`);
+    try {
+      const fields = 'code,product_name,brands,nutriments,serving_size,serving_quantity';
+      const j = await PD.fetchJSON(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${fields}`);
+      const f = j.product && offMap({ ...j.product, code });
+      if (f) { picked = f; renderAdd(); return; }
+      throw new Error('not found');
+    } catch (e) {
+      const q = $('#foodQuery'); if (q) q.value = code;
+      const box = $('#onlineResults');
+      if (box) box.innerHTML = `<p class="muted small">${/not found|404/i.test(e.message) ? `Product ${esc(code)} isn't in Open Food Facts yet.` : `Lookup failed (${esc(e.message)}).`} Use <b>Quick add</b> with the values from the label.</p>`;
+    }
+  }
+
   const resultList = (list) => `<ul class="results">${list.map((f, i) => `
     <li><button data-i="${i}">
       <span><b>${esc(f.name)}</b>${f.brand ? ` <span class="muted small">${esc(f.brand)}</span>` : ''}
@@ -132,6 +148,7 @@
       <div id="modeSearch">
         <div class="search">
           <input id="foodQuery" type="search" placeholder="Search food or barcode — e.g. banaan, kipfilet, 5410…" autocomplete="off">
+          <button type="button" class="btn scan-btn" id="scanBtn" title="Scan a barcode with your camera"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 8v8M10 8v8M13 8v8M17 8v8"/></svg><span>Scan</span></button>
         </div>
         <div id="localResults"></div>
         <div id="onlineResults"></div>
@@ -153,6 +170,7 @@
       </form>`;
 
     const q = $('#foodQuery');
+    $('#scanBtn').onclick = () => PD.scanner.open(lookupBarcode);
     const doLocal = () => {
       const v = q.value.trim();
       const res = localSearch(v);

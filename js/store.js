@@ -66,6 +66,13 @@
       weeklyGoal: 3,
       migrations: [],
       prefs: { voice: true, sound: true, getReady: 10 },
+      programs: [],       // custom multi-week programs
+      enrolled: null,     // { programId, start, days: [weekday…], done: [sessionIndex…], logs: {index: logId} }
+      programHistory: [], // finished programs
+    },
+    google: {             // never synced or exported: credentials for this browser only
+      clientId: '', clientSecret: '', accessToken: '', refreshToken: '', expiresAt: 0, email: '',
+      calendars: [], calendarOn: true, syncOn: true, fileId: '', synced: {}, lastSync: 0,
     },
     strava: {
       clientId: '', clientSecret: '',
@@ -87,32 +94,47 @@
     return val;
   }
 
-  const listeners = new Set();
-  function save(key) {
-    try { localStorage.setItem(PREFIX + key, JSON.stringify(cache[key])); } catch (e) { PD.toast('Could not save: storage full or blocked'); }
-    listeners.forEach((fn) => fn(key));
+  /* last-modified time per key, used by sync to know what changed where */
+  let meta;
+  function getMeta() {
+    if (!meta) { try { meta = JSON.parse(localStorage.getItem(`${PREFIX}meta`)) || {}; } catch { meta = {}; } }
+    return meta;
   }
+  /** When was this key last changed here? Data from before sync existed counts as "very old" (1). */
+  const modified = (key) => getMeta()[key] || (localStorage.getItem(PREFIX + key) ? 1 : 0);
+  function touch(key, t) { getMeta()[key] = t; try { localStorage.setItem(`${PREFIX}meta`, JSON.stringify(meta)); } catch { /* ignore */ } }
+
+  const listeners = new Set();
+  function save(key, opts = {}) {
+    try { localStorage.setItem(PREFIX + key, JSON.stringify(cache[key])); } catch (e) { PD.toast('Could not save: storage full or blocked'); }
+    touch(key, opts.t || Date.now());
+    listeners.forEach((fn) => fn(key, opts));
+  }
+  /** Replace a key with data that came from another device (keeps its timestamp). */
+  function setFromSync(key, value, t) { cache[key] = value; save(key, { t, fromSync: true }); }
   function set(key, value) { cache[key] = value; save(key); }
   const onChange = (fn) => listeners.add(fn);
 
   function exportAll() {
     const out = { app: 'personal-dashboard', version: 1, exported: new Date().toISOString() };
     Object.keys(DEFAULTS).forEach((k) => { out[k] = get(k); });
-    // Never put Strava secrets in a backup file.
+    // Never put Strava or Google credentials in a backup file.
     out.strava = { ...out.strava, clientSecret: '', accessToken: '', refreshToken: '', expiresAt: 0 };
+    delete out.google;
     return JSON.stringify(out, null, 2);
   }
   function importAll(json) {
     const data = JSON.parse(json);
     if (data.app !== 'personal-dashboard') throw new Error('Not a dashboard backup file');
     Object.keys(DEFAULTS).forEach((k) => {
-      if (!data[k]) return;
+      if (!data[k] || k === 'google') return;
       if (k === 'strava') set(k, { ...get('strava'), ...data[k], clientSecret: get('strava').clientSecret, accessToken: get('strava').accessToken, refreshToken: get('strava').refreshToken, expiresAt: get('strava').expiresAt });
       else set(k, data[k]);
     });
   }
   function resetAll() {
     Object.keys(DEFAULTS).forEach((k) => { localStorage.removeItem(PREFIX + k); delete cache[k]; });
+    localStorage.removeItem(`${PREFIX}meta`); meta = null;
   }
 
   /* one-time additions for data created by an older version (never removes anything) */
@@ -121,10 +143,13 @@
     w.migrations = w.migrations || [];
     if (!w.migrations.includes('band-routine')) {
       const r = defaultRoutines().find((x) => x.name === 'Band Strength');
-      if (r && !w.routines.some((x) => x.name === r.name)) w.routines.push({ ...r, id: `r-band-${Date.now().toString(36)}` });
-      w.migrations.push('band-routine'); save('workouts');
+      // only write when something actually changes, so a fresh device doesn't look "edited" to sync
+      if (r && localStorage.getItem(`${PREFIX}workouts`) && !w.routines.some((x) => x.name === r.name)) {
+        w.routines.push({ ...r, id: `r-band-${Date.now().toString(36)}` });
+        w.migrations.push('band-routine'); save('workouts');
+      }
     }
   }
 
-  PD.store = { get, save, set, onChange, exportAll, importAll, resetAll, migrate, DEFAULTS };
+  PD.store = { get, save, set, setFromSync, modified, onChange, exportAll, importAll, resetAll, migrate, DEFAULTS };
 })(window.PD);
