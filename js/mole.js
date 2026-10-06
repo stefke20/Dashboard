@@ -1,6 +1,7 @@
 /* Mo the mole: the dashboard mascot in the bottom-right corner.
    Idle breathing, blinking, eyes that follow your pointer, a wave on hover, sleeping at night,
-   cheering at celebrations and digging when you switch pages. Tap him for navigation & quick actions. */
+   cheering at celebrations, digging when you switch pages and now and then burrowing out of sight.
+   Tap him for navigation & quick actions — and don't tap him five times in a row… */
 (function (PD) {
   const { esc, $, $$, store, todayKey } = PD;
 
@@ -15,7 +16,10 @@
     sunglasses: '<g class="m-acc"><rect x="41" y="54" width="16" height="10" rx="4" fill="#212529"/><rect x="63" y="54" width="16" height="10" rx="4" fill="#212529"/><path d="M57 58 H63" stroke="#212529" stroke-width="2.5"/><path d="M44 56 l5 0" stroke="#fff" stroke-width="1.5" opacity=".7"/><path d="M66 56 l5 0" stroke="#fff" stroke-width="1.5" opacity=".7"/></g>',
     headphones: '<g class="m-acc"><path d="M30 66 Q28 30 60 30 Q92 30 90 66" fill="none" stroke="#343a40" stroke-width="5" stroke-linecap="round"/><rect x="23" y="56" width="11" height="17" rx="5" fill="#845ef7"/><rect x="86" y="56" width="11" height="17" rx="5" fill="#845ef7"/></g>',
   };
-  const CAPE = '<path class="m-cape" d="M33 60 Q18 98 22 113 L98 113 Q102 98 87 60 Z" fill="#e03131"/>';
+  const CAPE = '<path class="m-cape" d="M30 72 Q12 100 16 114 L104 114 Q108 100 90 72 Z" fill="#e03131" stroke="#2b211d" stroke-width="2"/>';
+  // outfits were drawn for a smaller head: nudge them onto the new one
+  const SHIFT = { hat: 'translate(0 -14)', acc: 'translate(0 -9)' };
+  const wear = (o) => (OUTFITS[o] ? `<g transform="${OUTFITS[o].includes('m-hat') ? SHIFT.hat : SHIFT.acc}">${OUTFITS[o]}</g>` : '');
 
   function outfit() {
     const eq = PD.rewards?.equipped('outfit') || '';
@@ -30,23 +34,32 @@
   function svg() {
     const o = outfit();
     return `<svg class="mole-svg" viewBox="0 0 120 120" aria-hidden="true">
-      ${o === 'cape' ? CAPE : ''}
-      <g class="m-body">
-        <ellipse class="m-fur" cx="60" cy="76" rx="33" ry="37"/>
-        <ellipse class="m-belly" cx="60" cy="88" rx="20" ry="21"/>
-        <g class="m-look"><g class="m-eyes"><circle cx="49" cy="60" r="3.4"/><circle cx="71" cy="60" r="3.4"/><circle class="m-shine" cx="50.2" cy="58.8" r="1.1"/><circle class="m-shine" cx="72.2" cy="58.8" r="1.1"/></g></g>
-        <ellipse class="m-cheek" cx="42" cy="70" rx="5.5" ry="3.2"/><ellipse class="m-cheek" cx="78" cy="70" rx="5.5" ry="3.2"/>
-        <ellipse class="m-snout" cx="60" cy="71" rx="10" ry="7.5"/>
-        <ellipse class="m-nose" cx="60" cy="67.5" rx="5" ry="3.4"/>
-        <path class="m-mouth" d="M55.5 75 Q60 78.5 64.5 75"/>
-        <path class="m-whisk" d="M49 70 L36 67 M49 73 L37 75 M71 70 L84 67 M71 73 L83 75"/>
-        <g class="m-paw m-paw-l"><ellipse cx="35" cy="96" rx="9" ry="6.5"/><path d="M28 99 v4 M32 100 v4 M36 100 v4" class="m-claw"/></g>
-        <g class="m-paw m-paw-r"><ellipse cx="85" cy="96" rx="9" ry="6.5"/><path d="M84 100 v4 M88 100 v4 M92 99 v4" class="m-claw"/></g>
-        ${o && o !== 'cape' ? OUTFITS[o] || '' : ''}
+      <defs><clipPath id="moClip"><rect x="-40" y="-60" width="200" height="167"/></clipPath></defs>
+      <g clip-path="url(#moClip)">
+        <g class="m-body">
+          ${o === 'cape' ? CAPE : ''}
+          <path class="m-fur" d="M18 116 C16 96 22 82 32 74 C26 62 26 46 34 36 C42 26 50 21 60 21 C70 21 80 26 87 36 C94 46 94 62 88 74 C98 82 104 96 102 116 Z"/>
+          <path class="m-shade" d="M32 74 Q60 90 88 74 C96 82 102 96 102 116 L18 116 C16 96 22 82 32 74 Z"/>
+          <ellipse class="m-gloss" cx="45" cy="34" rx="9" ry="5" transform="rotate(-30 45 34)"/>
+          <g class="m-look"><g class="m-eyes"><circle cx="46.5" cy="49" r="6"/><circle cx="73.5" cy="48" r="6"/><circle class="m-shine" cx="48.4" cy="46.6" r="2.1"/><circle class="m-shine" cx="75.4" cy="45.6" r="2.1"/></g></g>
+          <circle class="m-muzzle" cx="60" cy="61.5" r="12.5"/>
+          <ellipse class="m-nose" cx="60" cy="57.5" rx="7.8" ry="6"/>
+          <ellipse class="m-shine2" cx="58" cy="54.2" rx="3.2" ry="1.4"/>
+          <ellipse class="m-nostril" cx="57" cy="58.8" rx="1.5" ry="1.1"/><ellipse class="m-nostril" cx="63" cy="58.8" rx="1.5" ry="1.1"/>
+          <path class="m-mouth" d="M55 67 Q60 71.5 65 67"/>
+          <path class="m-whisk" d="M49 60 L22 56 M49 63 L20 67 M50 66 L28 77 M71 60 L98 56 M71 63 L100 67 M70 66 L92 77"/>
+          ${o && o !== 'cape' ? wear(o) : ''}
+        </g>
       </g>
-      <path class="m-mound" d="M4 118 Q14 92 60 94 Q106 92 116 118 Z"/>
-      <g class="m-dirt"><circle cx="30" cy="108" r="2.2"/><circle cx="52" cy="104" r="1.6"/><circle cx="76" cy="109" r="2"/><circle cx="92" cy="104" r="1.5"/></g>
-      <g class="m-zzz"><text x="84" y="40">z</text><text x="92" y="30">z</text><text x="100" y="20">Z</text></g>
+      <path class="m-mound" d="M8 113 Q4 106 12 104 Q12 96 22 98 Q24 92 32 96 Q38 98 40 104 Q46 98 54 101 Q60 97 66 101 Q72 98 78 104 Q82 96 90 96 Q98 93 100 100 Q110 100 110 107 Q117 110 112 116 Q60 121 12 117 Q5 117 8 113 Z"/>
+      <g class="m-spots"><ellipse cx="28" cy="110" rx="4" ry="2.4"/><ellipse cx="60" cy="109" rx="5" ry="2.6"/><ellipse cx="88" cy="111" rx="3.6" ry="2.2"/><ellipse cx="44" cy="114" rx="2.4" ry="1.5"/><ellipse cx="74" cy="114" rx="2.6" ry="1.5"/></g>
+      <g class="m-paws">
+        <g class="m-paw m-paw-l"><path class="m-pawpad" d="M23 100 C22 90 30 86 37 87 C45 88 49 94 47 101 Z"/><path class="m-claw" d="M25 99 L27 110 L31 100 Z M32 100 L35 112 L38 100 Z M39 100 L43 110 L45 99 Z"/></g>
+        <g class="m-paw m-paw-r"><path class="m-pawpad" d="M73 101 C71 94 75 88 83 87 C90 86 98 90 97 100 Z"/><path class="m-claw" d="M75 99 L77 110 L81 100 Z M82 100 L85 112 L88 100 Z M89 100 L93 110 L95 99 Z"/></g>
+      </g>
+      <g class="m-dirt"><ellipse cx="4" cy="108" rx="3.4" ry="2.6"/><ellipse cx="14" cy="119" rx="3" ry="2"/><ellipse cx="108" cy="119" rx="3.2" ry="2.2"/><ellipse cx="117" cy="112" rx="2.6" ry="2"/></g>
+      <g class="m-puff"><circle cx="30" cy="100" r="3"/><circle cx="46" cy="98" r="2.4"/><circle cx="60" cy="97" r="3.2"/><circle cx="76" cy="98" r="2.4"/><circle cx="90" cy="100" r="3"/></g>
+      <g class="m-zzz"><text x="88" y="28">z</text><text x="96" y="18">z</text><text x="104" y="8">Z</text></g>
     </svg>`;
   }
 
@@ -138,6 +151,72 @@
   function play(cls, ms) { const b = $('.mole-btn'); if (!b || PD.fx.reduce()) return; b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls); setTimeout(() => b.classList.remove(cls), ms); }
   const cheer = () => play('cheer', 1300);
   const dig = () => play('dig', 700);
+  const busy = () => wrap.classList.contains('open') || wrap.classList.contains('sleep') || document.hidden || PD.fx.reduce();
+
+  /** Now and then Mo burrows into his molehill and pops right back out. */
+  function burrow() {
+    if (!busy()) play('burrow', 2300);
+    clearTimeout(burrow.t); burrow.t = setTimeout(burrow, 45e3 + Math.random() * 60e3);
+  }
+
+  /* ---------- easter egg: tap Mo 5× quickly and he throws mud at the screen ---------- */
+  const GRUMBLE = ['Hey!', 'Hey! That tickles 😠', 'Stop it…', 'Last warning! 😤'];
+  let taps = [];
+  function onTap() {
+    const now = Date.now();
+    taps = taps.length && now - taps[taps.length - 1] < 650 ? taps.concat(now) : [now];
+    if (taps.length >= 5) { taps = []; close(); mud(); return; }
+    if (taps.length >= 2) {
+      close(); play('grumpy', 450); say(GRUMBLE[Math.min(taps.length - 1, GRUMBLE.length - 1)], 1600); return;
+    }
+    toggle();
+  }
+
+  /** An irregular splat outline (blob with a few droplets around it). */
+  function splat() {
+    const n = 14; const pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2; const r = 30 + Math.random() * 16 + (i % 3 === 0 ? 10 : 0);
+      pts.push([50 + Math.cos(a) * r, 50 + Math.sin(a) * r]);
+    }
+    const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+    let d = `M${mid(pts[n - 1], pts[0]).join(' ')}`;
+    pts.forEach((p, i) => { const m = mid(p, pts[(i + 1) % n]); d += ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`; });
+    let drops = '';
+    for (let i = 0; i < 5; i++) { const a = Math.random() * 7; const r = 52 + Math.random() * 18; drops += `<circle cx="${(50 + Math.cos(a) * r).toFixed(1)}" cy="${(50 + Math.sin(a) * r).toFixed(1)}" r="${(2 + Math.random() * 4).toFixed(1)}"/>`; }
+    const drip = Math.random() > 0.4 ? `<path class="drip" d="M${44 + Math.random() * 12} 80 q3 ${18 + Math.random() * 16} 6 0 z"/>` : '';
+    return `<svg viewBox="-20 -20 140 140"><path d="${d} Z"/>${drops}${drip}<ellipse class="hi" cx="40" cy="38" rx="10" ry="5" transform="rotate(-25 40 38)"/></svg>`;
+  }
+
+  function mud() {
+    if ($('.mud-layer')) return;
+    play('throw', 1500); PD.haptic?.([20, 40, 20]);
+    say('Take that! 😝', 2600);
+    const layer = document.createElement('div'); layer.className = 'mud-layer'; layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+    const from = $('.mole-btn', wrap).getBoundingClientRect();
+    const fx = from.left + from.width / 2; const fy = from.top + from.height * 0.3;
+    const W = innerWidth; const H = innerHeight; const count = W < 700 ? 6 : 9;
+    for (let i = 0; i < count; i++) {
+      const tx = W * (0.08 + Math.random() * 0.84); const ty = H * (0.08 + Math.random() * 0.72);
+      const size = (W < 700 ? 90 : 130) + Math.random() * 110;
+      const delay = 120 + i * 110;
+      const s = document.createElement('div'); s.className = 'mud-splat';
+      s.style.cssText = `left:${tx - size / 2}px;top:${ty - size / 2}px;width:${size}px;height:${size}px;--rot:${Math.round(Math.random() * 360)}deg;--d:${delay + 330}ms`;
+      s.innerHTML = splat(); layer.appendChild(s);
+      if (PD.fx.reduce()) continue;
+      const ball = document.createElement('i'); ball.className = 'mud-ball'; layer.appendChild(ball);
+      const lift = Math.min(fy, ty) - 120 - Math.random() * 120;
+      ball.animate([
+        { transform: `translate(${fx}px, ${fy}px) scale(.5)` },
+        { transform: `translate(${(fx + tx) / 2}px, ${lift}px) scale(1.1)`, offset: 0.5 },
+        { transform: `translate(${tx}px, ${ty}px) scale(1.5)` },
+      ], { duration: 330, delay, easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'both' }).onfinish = () => { ball.remove(); PD.fx.beep(140 + Math.random() * 60, 0.08, 0.12); };
+    }
+    requestAnimationFrame(() => layer.classList.add('on'));
+    setTimeout(() => layer.classList.add('wipe'), 4200);
+    setTimeout(() => { layer.remove(); say('Hehe, sorry. Cleaned it up for you 🧽', 2400); }, 5600);
+  }
 
   function mood() {
     const h = new Date().getHours();
@@ -172,7 +251,7 @@
       <div class="mole-menu" id="moleMenu" hidden role="dialog" aria-label="Mo the mole — navigation and quick actions"></div>
       <button class="mole-btn peek" aria-label="Mo the mole: navigation and quick actions" title="Hi, I'm Mo! Tap me">${svg()}</button>`;
     document.body.appendChild(wrap);
-    $('.mole-btn', wrap).onclick = toggle;
+    $('.mole-btn', wrap).onclick = onTap;
     $('#moleSay', wrap).onclick = () => { hideSpeech(); open(); };
     setTimeout(() => $('.mole-btn', wrap)?.classList.remove('peek'), 1400);
     document.addEventListener('pointerdown', (e) => { if (wrap.classList.contains('open') && !wrap.contains(e.target)) close(); });
@@ -189,7 +268,8 @@
     }, { passive: true });
     mood(); setInterval(mood, 60e3);
     greet();
+    burrow.t = setTimeout(burrow, 25e3 + Math.random() * 30e3);
   }
 
-  PD.mole = { init, open, close, cheer, dig, say, dress };
+  PD.mole = { init, open, close, cheer, dig, say, dress, burrow, mud };
 })(window.PD);
