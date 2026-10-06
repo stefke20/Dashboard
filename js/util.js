@@ -92,8 +92,9 @@ window.PD = window.PD || {};
     toastTimer = setTimeout(() => { el.classList.remove('show'); setTimeout(() => (el.hidden = true), 250); }, 2600);
   }
 
-  function modal(title, html, onMount) {
+  function modal(title, html, onMount, cls = '') {
     const dlg = $('#modal');
+    dlg.className = `modal ${cls}`;
     $('#modalTitle').textContent = title;
     $('#modalBody').innerHTML = html;
     if (!dlg.open) dlg.showModal();
@@ -108,7 +109,7 @@ window.PD = window.PD || {};
     const over = max > 0 && value > max;
     return `<svg class="ring" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="${esc(label)} ${esc(sub)}">
       <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${stroke}"/>
-      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${over ? 'var(--warn-ink)' : color}" stroke-width="${stroke}"
+      <circle class="ring-prog" style="--c:${c.toFixed(1)}" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${over ? 'var(--warn-ink)' : color}" stroke-width="${stroke}"
         stroke-linecap="round" stroke-dasharray="${c * pct} ${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
       <text x="50%" y="${sub ? '47%' : '53%'}" text-anchor="middle" class="ring-label">${esc(label)}</text>
       ${sub ? `<text x="50%" y="64%" text-anchor="middle" class="ring-sub">${esc(sub)}</text>` : ''}

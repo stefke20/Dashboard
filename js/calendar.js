@@ -7,6 +7,7 @@
     task: { label: 'Task', cls: 'mint', icon: '✅' },
     birthday: { label: 'Birthday', cls: 'pink', icon: '🎂' },
     holiday: { label: 'Holiday', cls: 'sky', icon: '🇧🇪' },
+    workout: { label: 'Workout', cls: 'peach', icon: '🏋️' },
   };
 
   let viewMonth = new Date(); viewMonth.setDate(1);
@@ -78,7 +79,12 @@
     if (showHol) for (let y = fy; y <= ty; y++) hol.push(...holidays(y));
     const out = [];
     [...events, ...hol].forEach((ev) => occurrenceIn(ev, from, to).forEach((k) => out.push({ ...ev, occursOn: k, displayTitle: display(ev, k) })));
-    const order = { holiday: 0, birthday: 1, event: 2, task: 3 };
+    // completed home workouts show up as read-only entries
+    (store.get('workouts').log || []).filter((l) => l.date >= from && l.date <= to).forEach((l) => out.push({
+      id: `w-${l.id}`, type: 'workout', readonly: true, done: true, date: l.date, occursOn: l.date,
+      time: PD.fmt.time(new Date(l.start)), displayTitle: `✓ ${l.name} · ${Math.round(l.duration / 60)} min`, notes: `${l.kcal} kcal`,
+    }));
+    const order = { holiday: 0, birthday: 1, event: 2, workout: 3, task: 4 };
     return out.sort((a, b) => a.occursOn.localeCompare(b.occursOn) || (a.time || '').localeCompare(b.time || '') || order[a.type] - order[b.type]);
   }
 
@@ -89,7 +95,7 @@
     const seen = new Set(); // only the next occurrence of a repeating event
     const next = between(t, PD.shiftKey(t, days)).filter((e) => {
       if (e.type === 'task' && e.done) return false;
-      if (seen.has(e.id)) return false;
+      if (seen.has(e.id) || (e.type === 'workout' && e.readonly)) return false;
       seen.add(e.id); return true;
     });
     return [...overdue, ...next];
@@ -131,7 +137,7 @@
               const k = keyOf(d); const items = byDay[k] || [];
               return `<button class="cal-cell${d.getMonth() !== m ? ' out' : ''}${k === t ? ' today' : ''}${k === selected ? ' sel' : ''}" data-k="${k}" aria-label="${esc(fmt.date(d))}, ${items.length} items">
                 <span class="cal-num">${d.getDate()}</span>
-                <span class="cal-items">${items.slice(0, 3).map((o) => `<span class="cal-chip ${TYPES[o.type].cls}${o.done ? ' done' : ''}">${esc(o.displayTitle)}</span>`).join('')}
+                <span class="cal-items">${items.slice(0, 3).map((o) => `<span class="cal-chip ${TYPES[o.type].cls}${o.done && o.type === 'task' ? ' done' : ''}">${esc(o.displayTitle)}</span>`).join('')}
                 ${items.length > 3 ? `<span class="muted small">+${items.length - 3} more</span>` : ''}
                 ${items.length ? `<span class="cal-dots">${items.slice(0, 4).map((o) => `<i class="dot ${TYPES[o.type].cls}"></i>`).join('')}</span>` : ''}</span>
               </button>`;
@@ -164,15 +170,16 @@
     return `<li class="ev-row" data-id="${o.id}">
       ${o.type === 'task' ? `<input type="checkbox" class="ev-done" data-id="${o.id}" ${o.done ? 'checked' : ''} aria-label="Done">` : `<span class="ev-icon" aria-hidden="true">${ty.icon}</span>`}
       <button class="ev-main" ${o.readonly ? 'disabled' : ''} data-edit="${o.id}">
-        <span class="ev-title${o.done ? ' strike' : ''}">${esc(o.displayTitle)}</span>
+        <span class="ev-title${o.done && o.type === 'task' ? ' strike' : ''}">${esc(o.displayTitle)}</span>
         <span class="muted small">${showDate ? esc(PD.relDay(o.occursOn)) : ty.label}${o.time ? ` · ${esc(o.time)}` : ''}${o.repeat && o.repeat !== 'none' && o.type !== 'birthday' ? ` · repeats ${esc(o.repeat)}` : ''}</span>
         ${o.notes ? `<span class="small ev-notes">${esc(o.notes)}</span>` : ''}
       </button>
-      <span class="pill ${ty.cls} small">${ty.label}</span>
+      ${o.type === 'workout' && o.routineId && !o.readonly && o.occursOn === todayKey() ? `<button class="btn sm" data-wstart="${esc(o.routineId)}">▶ Start</button>` : `<span class="pill ${ty.cls} small">${ty.label}</span>`}
     </li>`;
   }
 
   function bindRows(root) {
+    $$('[data-wstart]', root).forEach((b) => (b.onclick = () => PD.workout.start(b.dataset.wstart)));
     $$('[data-edit]', root).forEach((b) => (b.onclick = () => {
       const ev = store.get('events').find((e) => e.id === b.dataset.edit);
       if (ev) editor(ev);
@@ -212,15 +219,15 @@
     PD.modal(isNew ? 'New item' : 'Edit item', `
       <form id="evForm" class="form">
         <div class="segmented" role="radiogroup">
-          ${['event', 'task', 'birthday'].map((ty) => `<label><input type="radio" name="type" value="${ty}" ${ty === type ? 'checked' : ''}><span>${TYPES[ty].icon} ${TYPES[ty].label}</span></label>`).join('')}
+          ${['event', 'task', 'birthday', 'workout'].map((ty) => `<label><input type="radio" name="type" value="${ty}" ${ty === type ? 'checked' : ''}><span>${TYPES[ty].icon} ${TYPES[ty].label}</span></label>`).join('')}
         </div>
         <label>Title<input name="title" required maxlength="120" value="${esc(ev.title || '')}" placeholder="What's happening?"></label>
         <div class="row gap">
           <label class="grow">Date<input type="date" name="date" required value="${esc(ev.date || todayKey())}"></label>
-          <label class="grow" data-for="event task">Time<input type="time" name="time" value="${esc(ev.time || '')}"></label>
+          <label class="grow" data-for="event task workout">Time<input type="time" name="time" value="${esc(ev.time || '')}"></label>
         </div>
         <label class="toggle" data-for="birthday"><input type="checkbox" name="noYear" ${ev.noYear ? 'checked' : ''}> I don't know the birth year</label>
-        <label data-for="event">Repeat
+        <label data-for="event workout">Repeat
           <select name="repeat">${['none', 'weekly', 'monthly', 'yearly'].map((r) => `<option value="${r}" ${r === (ev.repeat || 'none') ? 'selected' : ''}>${r === 'none' ? 'Does not repeat' : r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></label>
         <label>Notes<textarea name="notes" rows="2" maxlength="500">${esc(ev.notes || '')}</textarea></label>
         <div class="row gap end">
@@ -243,7 +250,7 @@
         const data = {
           title: form.title.value.trim(), type: ty, date: form.date.value,
           time: ty === 'birthday' ? '' : form.time.value, notes: form.notes.value.trim(),
-          repeat: ty === 'event' ? form.repeat.value : 'none', noYear: ty === 'birthday' && form.noYear.checked,
+          repeat: ty === 'event' || ty === 'workout' ? form.repeat.value : 'none', noYear: ty === 'birthday' && form.noYear.checked,
         };
         const events = store.get('events');
         if (isNew) events.push({ id: PD.uid(), done: false, ...data });

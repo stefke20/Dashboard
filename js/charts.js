@@ -42,8 +42,14 @@
    * bars: [{label, value, tip, highlight}]
    * opts: {target, targetLabel, height, color, onClick(i)}
    */
+  // animate only the first draw into a container (not every resize / data refresh)
+  const firstDraw = (el) => { const f = !el.dataset.drawn; el.dataset.drawn = '1'; return f && !PD.fx.reduce(); };
+
   function bar(el, bars, opts = {}) {
+    const animate = firstDraw(el);
+    let drawn = false;
     observe(el, () => {
+      const anim = animate && !drawn; drawn = true;
       const W = Math.max(el.clientWidth, 240); const H = opts.height || 220;
       const m = { t: 16, r: 8, b: 28, l: 40 };
       const iw = W - m.l - m.r; const ih = H - m.t - m.b;
@@ -65,7 +71,7 @@
         const r = Math.min(4, bw / 2, h);
         const x0 = cx - bw / 2; const y0 = y(v); const yb = m.t + ih;
         if (h > 0) {
-          s += `<path class="bar${b.highlight ? ' hl' : ''}" fill="${b.color || color}" d="M${x0},${yb} V${y0 + r} Q${x0},${y0} ${x0 + r},${y0} H${x0 + bw - r} Q${x0 + bw},${y0} ${x0 + bw},${y0 + r} V${yb} Z"/>`;
+          s += `<path class="bar${b.highlight ? ' hl' : ''}${anim ? ' grow' : ''}" style="--i:${i}" fill="${b.color || color}" d="M${x0},${yb} V${y0 + r} Q${x0},${y0} ${x0 + r},${y0} H${x0 + bw - r} Q${x0 + bw},${y0} ${x0 + bw},${y0 + r} V${yb} Z"/>`;
         }
         if (i % every === 0 || (i === bars.length - 1 && i % every >= every * 0.6)) {
           s += `<text x="${cx}" y="${H - 8}" text-anchor="middle" class="axis${b.highlight ? ' strong' : ''}">${esc(b.label)}</text>`;
@@ -94,7 +100,10 @@
    * opts: {goal, goalLabel, height, color, unit}
    */
   function line(el, points, opts = {}) {
+    const animate = firstDraw(el);
+    let drawn = false;
     observe(el, () => {
+      const anim = animate && !drawn; drawn = true;
       const W = Math.max(el.clientWidth, 240); const H = opts.height || 220;
       const m = { t: 16, r: 12, b: 28, l: 40 };
       const iw = W - m.l - m.r; const ih = H - m.t - m.b;
@@ -124,9 +133,9 @@
       const pts = points.map((p, i) => (p.value == null ? null : [x(i), y(p.value)])).filter(Boolean);
       if (pts.length) {
         const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-        s += `<path d="${d} L${pts[pts.length - 1][0]},${m.t + ih} L${pts[0][0]},${m.t + ih} Z" class="area" fill="${color}"/>`;
-        s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-        if (pts.length <= 40) pts.forEach((p) => { s += `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${color}" class="dot"/>`; });
+        s += `<path d="${d} L${pts[pts.length - 1][0]},${m.t + ih} L${pts[0][0]},${m.t + ih} Z" class="area${anim ? ' fade' : ''}" fill="${color}"/>`;
+        s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" pathLength="1" class="${anim ? 'draw' : ''}"/>`;
+        if (pts.length <= 40) pts.forEach((p, i) => { s += `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${color}" class="dot${anim ? ' pop' : ''}" style="--i:${i}"/>`; });
       }
       s += `<line class="cross" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" visibility="hidden"/>`;
       s += `<circle class="cross-dot" r="5" fill="${color}" visibility="hidden"/>`;

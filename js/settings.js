@@ -2,7 +2,16 @@
 (function (PD) {
   const { esc, $, $$, store } = PD;
 
+  const PALETTES = [
+    ['aurora', 'Aurora', ['#6155f5', '#1d9bf0', '#12a679']],
+    ['volt', 'Volt', ['#141414', '#b5e61d', '#14b8a6']],
+    ['sunset', 'Sunset', ['#e8553e', '#f2a03d', '#c2417a']],
+    ['ocean', 'Ocean', ['#0f8b8d', '#2f6fde', '#3a9d5d']],
+    ['pastel', 'Pastel', ['#c9b8ff', '#b8ecd7', '#ffd3b6']],
+  ];
+
   function applyTheme() {
+    document.documentElement.dataset.palette = store.get('settings').palette || 'aurora';
     const t = store.get('settings').theme;
     if (t === 'auto') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', t);
@@ -17,6 +26,12 @@
           <label class="grow">Theme<select name="theme">
             ${[['auto', 'Match system'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}" ${s.theme === v ? 'selected' : ''}>${l}</option>`).join('')}
           </select></label>
+        </div>
+
+        <h3 class="sub">Colour scheme</h3>
+        <div class="palettes" role="radiogroup">${PALETTES.map(([id, label, cols]) => `
+          <label class="palette"><input type="radio" name="palette" value="${id}" ${(s.palette || 'aurora') === id ? 'checked' : ''}>
+            <span class="swatches">${cols.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>${label}</span></label>`).join('')}
         </div>
 
         <h3 class="sub">Weather location</h3>
@@ -49,6 +64,11 @@
       </form>`, (body, close) => {
       const f = $('#setForm', body);
       let loc = s.location;
+      const prevPalette = s.palette; const prevTheme = s.theme; let saved = false;
+      // live preview while picking
+      $$('input[name=palette]', body).forEach((r) => (r.onchange = () => { document.documentElement.dataset.palette = r.value; }));
+      f.theme.onchange = () => { s.theme = f.theme.value; applyTheme(); s.theme = prevTheme; };
+      $('#modal').addEventListener('close', () => { if (!saved) { s.palette = prevPalette; s.theme = prevTheme; applyTheme(); } }, { once: true });
 
       const searchLoc = async () => {
         const q = $('#locQuery').value.trim();
@@ -92,6 +112,7 @@
         e.preventDefault();
         const prevLoc = s.location;
         s.name = f.name.value.trim(); s.theme = f.theme.value; s.location = loc;
+        s.palette = f.palette.value; saved = true;
         s.feeds = $$('[data-feed]', body).map((cb) => {
           const existing = s.feeds.find((x) => x.id === cb.dataset.feed);
           return existing ? { ...existing, enabled: cb.checked } : { id: cb.dataset.feed, name: cb.dataset.name, url: cb.dataset.url, enabled: cb.checked };

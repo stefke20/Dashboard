@@ -2,10 +2,35 @@
 (function (PD) {
   const PREFIX = 'pd.';
 
+  function defaultRoutines() {
+    let n = 0;
+    const R = (name, emoji, color, rounds, rest, roundRest, items) => ({
+      id: `r${++n}`, name, emoji, color, rounds, rest, roundRest, created: 0,
+      items: items.map(([ex, mode, value, side]) => ({ id: `${n}-${ex}`, ex, mode, value, side: !!side })),
+    });
+    return [
+      R('7-Minute Classic', '⚡', 'violet', 1, 10, 0, [
+        ['jacks', 'time', 30], ['wallsit', 'time', 30], ['pushup', 'time', 30], ['crunch', 'time', 30], ['stepup', 'time', 30],
+        ['squat', 'time', 30], ['dips', 'time', 30], ['plank', 'time', 30], ['highknees', 'time', 30], ['lunge', 'time', 30],
+        ['taps', 'time', 30], ['sideplank', 'time', 15, true]]),
+      R('Full Body HIIT', '💥', 'peach', 3, 20, 60, [
+        ['burpee', 'time', 40], ['climber', 'time', 40], ['jumpsquat', 'time', 40], ['pushup', 'time', 40], ['highknees', 'time', 40], ['updown', 'time', 40]]),
+      R('Core Crusher', '🔥', 'pink', 2, 15, 45, [
+        ['plank', 'time', 40], ['bicycle', 'time', 30], ['legraise', 'reps', 12], ['twist', 'time', 30], ['deadbug', 'reps', 8, true], ['hollow', 'time', 20]]),
+      R('Lower Body Burn', '🦵', 'mint', 3, 20, 60, [
+        ['squat', 'reps', 15], ['lunge', 'reps', 10, true], ['bridge', 'reps', 15], ['jumpsquat', 'reps', 10], ['wallsit', 'time', 45], ['calf', 'reps', 20]]),
+      R('Upper Body Strength', '💪', 'sky', 3, 30, 60, [
+        ['pushup', 'reps', 12], ['pike', 'reps', 8], ['dips', 'reps', 12], ['taps', 'time', 30], ['superman', 'reps', 12]]),
+      R('Morning Mobility', '🌅', 'mint', 1, 5, 0, [
+        ['catcow', 'time', 40], ['child', 'time', 40], ['cobra', 'time', 30], ['hipflexor', 'time', 30, true], ['toetouch', 'time', 30], ['sidebend', 'time', 30], ['armcircle', 'time', 30]]),
+    ];
+  }
+
   const DEFAULTS = {
     settings: {
       name: '',
       theme: 'auto',
+      palette: 'aurora',
       location: { name: 'Westerlo, Belgium', lat: 51.0906, lon: 4.9164 },
       feeds: [
         { id: 'vrt', name: 'VRT NWS', url: 'https://www.vrt.be/vrtnws/nl.rss.articles.xml', enabled: true },
@@ -30,6 +55,14 @@
       daily: {},          // { date: { steps, sleep, rhr } }
       stepGoal: 10000,
       weightGoal: null,
+    },
+    workouts: {
+      routines: defaultRoutines(),
+      log: [],            // [{id, routineId, name, emoji, date, start, duration, active, kcal, exercises, rating, partial}]
+      custom: [],         // user-made exercises
+      media: {},          // { exerciseId: url } own video / GIF links
+      weeklyGoal: 3,
+      prefs: { voice: true, sound: true, getReady: 10 },
     },
     strava: {
       clientId: '', clientSecret: '',

@@ -18,7 +18,7 @@
     const s = store.get('strava');
     const url = `https://www.strava.com/oauth/authorize?client_id=${encodeURIComponent(s.clientId)}`
       + `&response_type=code&redirect_uri=${encodeURIComponent(redirectUri())}`
-      + '&approval_prompt=auto&scope=read,activity:read_all&state=strava';
+      + '&approval_prompt=auto&scope=read,activity:read_all,activity:write&state=strava';
     location.href = url;
   }
 
@@ -47,11 +47,12 @@
     return true;
   }
 
-  async function api(path) {
+  async function api(path, opts = {}) {
     const s = store.get('strava');
     if (Date.now() / 1000 > s.expiresAt - 120) await tokenRequest({ refresh_token: s.refreshToken, grant_type: 'refresh_token' });
-    const res = await fetch(`https://www.strava.com/api/v3${path}`, { headers: { Authorization: `Bearer ${s.accessToken}` } });
+    const res = await fetch(`https://www.strava.com/api/v3${path}`, { ...opts, headers: { Authorization: `Bearer ${s.accessToken}` } });
     if (res.status === 401) throw new Error('Strava authorisation expired — please reconnect.');
+    if (res.status === 403 && opts.method === 'POST') throw new Error('Reconnect Strava (Health tab → Disconnect → Connect) to allow uploads.');
     if (res.status === 429) throw new Error('Strava rate limit reached, try again in 15 minutes.');
     if (!res.ok) throw new Error(`Strava error ${res.status}`);
     return res.json();
@@ -322,12 +323,67 @@
     const r = $('#importResult'); if (r) r.textContent = out.join(' · ');
   }
 
+  /* ---------- home workouts (from the My workout tab) ---------- */
+  async function uploadWorkout(w) {
+    const body = new URLSearchParams({
+      name: `${w.emoji || ''} ${w.name}`.trim(), sport_type: 'Workout', type: 'Workout', start_date_local: (() => { const d = new Date(w.start); return `${PD.keyOf(d)}T${PD.pad(d.getHours())}:${PD.pad(d.getMinutes())}:${PD.pad(d.getSeconds())}`; })(),
+      elapsed_time: String(w.duration), description: `${w.exercises}/${w.total} exercises · ~${w.kcal} kcal · logged with my dashboard`, trainer: '1',
+    });
+    const a = await api('/activities', { method: 'POST', body });
+    w.stravaId = a.id; store.save('workouts');
+  }
+
+  const RATING = ['', '😌', '🙂', '😅', '🥵'];
+  function workoutSection() {
+    const st = PD.workout.stats();
+    const log = store.get('workouts').log.slice().sort((a, b) => b.start.localeCompare(a.start));
+    const wk = weekSummary();
+    const activeMin = st.weekMin + (wk ? wk.time / 60 : 0);
+    return `<div class="card">
+      <div class="card-head"><h2><span class="brand-badge workout">🏋</span> Home workouts</h2>
+        <a class="btn sm ghost" href="#workout">Open My workout →</a></div>
+      <div class="stat-row">
+        <div class="stat peach"><span>Workouts this week</span><b>${st.weekCount} / ${st.goal}</b><small>${st.streak ? `🔥 ${st.streak} week streak` : 'weekly goal'}</small></div>
+        <div class="stat"><span>Workout minutes</span><b data-count="${Math.round(st.weekMin)}">0</b><small class="muted">this week</small></div>
+        <div class="stat"><span>Calories burned</span><b data-count="${Math.round(st.weekKcal)}">0</b><small class="muted">this week</small></div>
+        <div class="stat violet"><span>All activity</span><b data-count="${Math.round(activeMin)}">0</b><small>min incl. Strava</small></div>
+      </div>
+      <div class="two-col">
+        <div><h3 class="sub">Workout minutes · last 12 weeks</h3><div class="chart-box" id="wkChart"></div></div>
+        <div><h3 class="sub">Recent sessions</h3>
+          ${log.length ? `<ul class="sessions">${log.slice(0, 6).map((l) => `
+            <li><span class="act-icon" aria-hidden="true">${esc(l.emoji || '🏋️')}</span>
+              <span class="act-main"><b>${esc(l.name)}${l.partial ? ' <span class="pill small peach">partial</span>' : ''}</b>
+                <span class="muted small">${esc(PD.relDay(l.date))} · ${fmt.duration(l.duration)} · ${l.exercises}/${l.total} exercises${l.stravaId ? ' · on Strava' : ''}</span></span>
+              <span class="act-stats"><b>${fmt.num(l.kcal)}</b> kcal ${l.rating ? RATING[l.rating] : ''}</span>
+              <button class="icon-btn sm ghost" data-wdel="${l.id}" aria-label="Delete session"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`).join('')}</ul>`
+            : '<p class="empty">No home workouts yet. Pick a routine in <a href="#workout">My workout</a> and press Start.</p>'}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function drawWorkouts() {
+    const el = $('#wkChart');
+    if (!el) return;
+    const weeks = PD.workout.weeklyMinutes(12);
+    PD.charts.bar(el, weeks.map((w, i) => ({
+      label: fmt.dayMonth(w.week), value: Math.round(w.min), highlight: i === 11,
+      tip: `<b>Week of ${esc(fmt.dayMonth(w.week))}</b><br>${w.count} workout${w.count === 1 ? '' : 's'} · ${fmt.num(w.min)} min<br>~${fmt.num(w.kcal)} kcal`,
+    })), { color: 'var(--accent-violet-ink)', label: 'Workout minutes per week', height: 190 });
+    $$('[data-wdel]').forEach((b) => (b.onclick = () => {
+      if (!confirm('Delete this workout session?')) return;
+      const w = store.get('workouts'); w.log = w.log.filter((l) => l.id !== b.dataset.wdel); store.save('workouts'); render();
+    }));
+  }
+
   /* ---------- page ---------- */
   function render() {
     const page = $('#page-health');
     page.innerHTML = `
       <div class="page-head"><div><h1>Health</h1><p class="muted">Training from Strava, body data from Samsung Health or your own log.</p></div></div>
       ${stravaSection()}
+      ${workoutSection()}
       ${bodySection()}`;
 
     const sf = $('#stravaForm');
@@ -345,7 +401,7 @@
       render();
     };
     $$('#sportChips .chip').forEach((c) => (c.onclick = () => { sportFilter = c.dataset.g; render(); }));
-    drawWeekly(); drawBody();
+    drawWeekly(); drawWorkouts(); drawBody();
 
     const hf = $('#healthForm');
     hf.date.onchange = () => {
@@ -375,5 +431,5 @@
     }
   }
 
-  PD.health = { render, handleRedirect, weekSummary, importSamsung };
+  PD.health = { render, handleRedirect, weekSummary, importSamsung, uploadWorkout };
 })(window.PD);

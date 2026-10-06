@@ -205,6 +205,7 @@
     const el = $('#summary');
     const t = D().targets; const tot = totals(day);
     const left = t.kcal - tot.kcal;
+    const burned = store.get('workouts').log.filter((l) => l.date === day).reduce((sum, l) => sum + l.kcal, 0);
     const macro = (label, v, target, cls) => `
       <div class="macro">
         <div class="macro-head"><span>${label}</span><span class="muted small"><b>${fmt.num(v)}</b> / ${fmt.num(target)} g</span></div>
@@ -214,7 +215,8 @@
       <div class="summary">
         ${PD.ring(tot.kcal, t.kcal, { size: 168, stroke: 16, label: fmt.num(tot.kcal), sub: `of ${fmt.num(t.kcal)} kcal` })}
         <div class="summary-side">
-          <p class="remaining ${left < 0 ? 'over' : ''}"><b>${fmt.num(Math.abs(left))}</b> kcal ${left < 0 ? 'over target' : 'remaining'}</p>
+          <p class="remaining ${left < 0 ? 'over' : ''}"><b data-count="${Math.abs(left)}">0</b> kcal ${left < 0 ? 'over target' : 'remaining'}</p>
+          ${burned ? `<p class="burned">🔥 <b>${fmt.num(burned)}</b> kcal burned in home workouts${day === todayKey() ? ' today' : ''} <a href="#workout" class="small">details</a></p>` : ''}
           ${macro('Protein', tot.p, t.protein, 'violet')}
           ${macro('Carbs', tot.c, t.carbs, 'peach')}
           ${macro('Fat', tot.f, t.fat, 'sky')}
@@ -229,6 +231,7 @@
     $$('[data-w]', el).forEach((b) => (b.onclick = () => {
       const d = D(); d.water[day] = Math.max(0, (d.water[day] || 0) + Number(b.dataset.w)); store.save('diet'); renderSummary();
     }));
+    PD.fx.countUp(el);
   }
 
   function renderMeals() {

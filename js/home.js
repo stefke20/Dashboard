@@ -270,24 +270,27 @@
     const water = diet.water[today] || 0;
     const steps = health.daily[today]?.steps || 0;
     const wk = PD.health.weekSummary();
+    const ws = PD.workout.stats();
+    const activeMin = Math.round(ws.weekMin + (wk ? wk.time / 60 : 0));
     const pct = (v, m) => Math.min(100, m ? (v / m) * 100 : 0);
     el.innerHTML = `
       <a class="tile violet" href="#diet">
         <span class="tile-label">Calories</span>
-        <span class="tile-value">${fmt.num(eaten)}<small> / ${fmt.num(diet.targets.kcal)}</small></span>
+        <span class="tile-value"><span data-count="${eaten}">0</span><small> / ${fmt.num(diet.targets.kcal)}</small></span>
         <span class="bar-track"><i style="width:${pct(eaten, diet.targets.kcal)}%"></i></span>
         <span class="muted small">${eaten > diet.targets.kcal ? `${fmt.num(eaten - diet.targets.kcal)} over` : `${fmt.num(diet.targets.kcal - eaten)} left`}</span>
       </a>
       <a class="tile mint" href="#health">
         <span class="tile-label">Steps</span>
-        <span class="tile-value">${steps ? fmt.num(steps) : '—'}<small> / ${fmt.num(health.stepGoal)}</small></span>
+        <span class="tile-value">${steps ? `<span data-count="${steps}">0</span>` : '—'}<small> / ${fmt.num(health.stepGoal)}</small></span>
         <span class="bar-track"><i style="width:${pct(steps, health.stepGoal)}%"></i></span>
         <span class="muted small">${steps ? `${Math.round(pct(steps, health.stepGoal))}% of goal` : 'Log or import in Health'}</span>
       </a>
-      <a class="tile peach" href="#health">
-        <span class="tile-label">This week</span>
-        <span class="tile-value">${wk ? `${fmt.num(wk.km, 1)}<small> km</small>` : '—'}</span>
-        <span class="muted small">${wk ? `${wk.count} activit${wk.count === 1 ? 'y' : 'ies'} · ${fmt.duration(wk.time)}` : 'Connect Strava in Health'}</span>
+      <a class="tile peach" href="#workout">
+        <span class="tile-label">Active this week</span>
+        <span class="tile-value"><span data-count="${activeMin}">0</span><small> min</small></span>
+        <span class="bar-track"><i style="width:${pct(ws.weekCount, ws.goal)}%"></i></span>
+        <span class="muted small">${ws.weekCount}/${ws.goal} workouts${wk ? ` · ${fmt.num(wk.km, 1)} km on Strava` : ''}</span>
       </a>
       <div class="tile sky">
         <span class="tile-label">Water</span>
@@ -301,7 +304,9 @@
     $$('[data-water]', el).forEach((b) => (b.onclick = () => {
       diet.water[today] = Math.max(0, (diet.water[today] || 0) + Number(b.dataset.water));
       store.save('diet'); renderTiles();
+      if (Number(b.dataset.water) > 0 && diet.water[today] === diet.targets.water) { PD.fx.confetti({ count: 70, origin: { x: 0.75, y: 0.4 } }); PD.toast('Hydration goal reached 💧'); }
     }));
+    PD.fx.countUp(el);
   }
 
   /* ---------- hero ---------- */
