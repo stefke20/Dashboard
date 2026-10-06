@@ -120,7 +120,7 @@
     const leveled = g.init && xp.level > (g.level || 0);
     g.level = Math.max(g.level || 0, xp.level); g.init = true;
     store.save('game');
-    if (quiet) return;
+    if (quiet) { if (fresh.length && !silent) PD.rewards?.announce(); return; }
     if (leveled) queue.push({ type: 'level', xp });
     fresh.forEach((b) => queue.push({ type: 'badge', b }));
     next();
@@ -136,15 +136,20 @@
       el.innerHTML = `<div class="levelup-inner"><span class="small">LEVEL UP</span><div class="level-medal big"><b>${item.xp.level}</b></div><h2>${esc(item.xp.title)}</h2><p>${fmt.num(item.xp.total)} XP · next level at ${fmt.num(item.xp.to)}</p></div>`;
       PD.fx.confetti({ count: 200 }); PD.fx.fanfare?.();
     } else {
+      const rw = PD.rewards?.forBadge(item.b.id);
       el.className = `achv ${item.b.tier}`;
-      el.innerHTML = `<div class="medal ${item.b.tier} shine"><span>${item.b.icon}</span></div><div><span class="small">Achievement unlocked</span><b>${esc(item.b.name)}</b><span class="small muted">${esc(item.b.desc)}</span></div>`;
+      el.innerHTML = `<div class="medal ${item.b.tier} shine"><span>${item.b.icon}</span></div><div><span class="small">Achievement unlocked</span><b>${esc(item.b.name)}</b><span class="small muted">${esc(item.b.desc)}</span>
+        ${rw ? `<span class="gift">🎁 Unlocked: <b>${esc(rw.name)}</b> <span class="muted">(${esc(PD.rewards.TYPES[rw.type].label.toLowerCase().replace(/s$/, ''))})</span></span>` : ''}</div>
+        ${rw ? '<button class="btn sm" data-useit>Use it</button>' : ''}`;
       if (['gold', 'epic'].includes(item.b.tier)) PD.fx.confetti({ count: 120, origin: { x: 0.5, y: 0.15 } }); else PD.fx.chime?.();
     }
     PD.haptic?.([30, 40, 30]);
     el.onclick = () => done();
+    const use = el.querySelector('[data-useit]');
+    if (use) use.onclick = (e) => { e.stopPropagation(); PD.rewards.equip(PD.rewards.forBadge(item.b.id)); done(); };
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('show'));
-    const t = setTimeout(done, item.type === 'level' ? 3800 : 3400);
+    const t = setTimeout(done, item.type === 'level' ? 3800 : el.querySelector('[data-useit]') ? 6500 : 3400);
     function done() { clearTimeout(t); el.classList.remove('show'); setTimeout(() => { el.remove(); showing = false; next(); }, 400); }
   }
 
@@ -172,10 +177,12 @@
         <div class="game-badges">
           ${got.slice(0, 4).map((b) => `<div class="medal ${b.tier} sm" title="${esc(b.name)}"><span>${b.icon}</span></div>`).join('')}
           <button class="btn sm ghost" id="allBadges">🏆 ${got.length}/${badges.length}</button>
+          <button class="btn sm" id="openLocker">🎁 Locker</button>
         </div>
       </div>
       ${nextUp ? `<div class="next-badge"><div class="medal ${nextUp.tier} sm locked"><span>${nextUp.icon}</span></div><span class="small"><b>Next: ${esc(nextUp.name)}</b> — ${esc(nextUp.desc)}</span><span class="mini-bar"><i style="width:${(nextUp.cur / nextUp.target) * 100}%"></i></span><span class="small muted">${fmt.num(nextUp.cur)}/${fmt.num(nextUp.target)}</span></div>` : ''}`;
     $('#allBadges', el).onclick = gallery;
+    $('#openLocker', el).onclick = () => PD.rewards.locker();
     PD.fx.countUp(el);
   }
 
@@ -184,15 +191,17 @@
     const cats = [...new Set(badges.map((b) => b.cat))];
     const SRC = { workouts: '🏋️ Workouts', strava: '🚴 Strava', habits: '✅ Habits', food: '🥗 Food logging', water: '💧 Water goals', focus: '🍅 Focus', fasting: '⏳ Fasting', tasks: '📋 Tasks & cards' };
     PD.modal('Achievements', `
+      <div class="row gap"><span class="muted small grow">Each badge unlocks a reward: themes, celebrations, effects and more.</span><button class="btn sm" id="galLocker">🎁 Open Locker</button></div>
       <div class="xp-sources">${Object.entries(xp.src).filter(([, v]) => v).map(([k, v]) => `<span class="pill">${SRC[k]} <b>${fmt.num(v)}</b></span>`).join('')}</div>
       <p class="muted small">You earn XP for everything you log: workouts (more for longer and programme sessions), Strava activities, habits, food and water, focus sessions, fasts and finished tasks.</p>
       ${cats.map((c) => `<h3 class="sub">${esc(c)}</h3><div class="badge-grid">${badges.filter((b) => b.cat === c).map((b) => `
         <div class="badge-item ${b.done ? '' : 'locked'}">
           <div class="medal ${b.tier}${b.done ? ' shine' : ' locked'}"><span>${b.icon}</span></div>
           <b>${esc(b.name)}</b><span class="small muted">${esc(b.desc)}</span>
+          ${PD.rewards?.forBadge(b.id) ? `<span class="gift small">🎁 ${esc(PD.rewards.forBadge(b.id).name)}</span>` : ''}
           ${b.done ? `<span class="small tier-${b.tier}">${b.tier[0].toUpperCase() + b.tier.slice(1)}${b.at ? ` · ${esc(fmt.dayMonth(PD.parseKey(b.at)))}` : ''}</span>`
             : `<span class="mini-bar"><i style="width:${(b.cur / b.target) * 100}%"></i></span><span class="small muted">${fmt.num(b.cur)} / ${fmt.num(b.target)}</span>`}
-        </div>`).join('')}</div>`).join('')}`, null, 'wide');
+        </div>`).join('')}</div>`).join('')}`, (body) => { $('#galLocker', body).onclick = () => PD.rewards.locker(); }, 'wide');
   }
 
   PD.game = { compute, state, check, card, gallery, xpWorkout };

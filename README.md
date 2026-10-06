@@ -45,6 +45,21 @@ Everything you log earns XP: workouts (more for longer workouts and programme se
 
 XP is calculated from your data, so it also counts everything you did before this feature, and it's the same on every synced device.
 
+### 🎁 Rewards (the Locker)
+
+Every badge unlocks a reward you can switch on in the **Locker** (🎁 button in *My workout*, or <kbd>Ctrl</kbd>+<kbd>K</kbd> → "Locker"):
+
+| Type | Rewards (badge that unlocks it) |
+|---|---|
+| Site themes | Neon (Ten down) · Ember (On a roll) · Forest (Habit week) · Lagoon (Hydration hero) · Candy (Goal getter) · Midnight (Half century) · Zen (Steady faster) · Royal (Royalty) · Gold Rush (Centurion) · Obsidian (Iron will) |
+| Celebrations | Emoji burst (First sweat) · Shooting stars (Early bird) · Fireworks (Unstoppable) · Hearts (Perfect day) · Fruit salad (Nutrition nerd) |
+| Header effects | Night sky (Night owl) · Bubbles (Deep work) · Fireflies (Sixteen) · Sparkles (Rising star) · Aurora (Graduate) · Digital rain (Flow state) · Meteor shower (Long haul) |
+| Workout player skins | Galaxy (Hour power) · Lava (Furnace) · Deep ocean (Time served) · Synthwave (Road warrior) |
+| Cursor trails | Sparkle (Food logger) · Rainbow (Perfect ten) · Comet (Shipper) |
+| Level frames | Flame (Habit master) · Legend (Legend) |
+
+When you earn a badge, its popup has a **Use it** button. Unlocked themes also appear in *Settings → Colour scheme*; locked ones show how to earn them.
+
 ## Spotify
 
 The *Spotify* card on Home shows what's playing (cover, progress, device) with shuffle / previous / play-pause / next, and a mini player appears in the workout player.

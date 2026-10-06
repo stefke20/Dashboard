@@ -36,6 +36,7 @@
 
   PD.store.migrate();
   PD.settings.applyTheme();
+  PD.rewards.apply();
   $('#openSettings').onclick = () => PD.settings.open();
   // live Google Calendar results arrive asynchronously: refresh what shows them
   PD.gcal.onUpdate = () => {

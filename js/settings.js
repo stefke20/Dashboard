@@ -178,6 +178,11 @@
         <div class="palettes" role="radiogroup">${PALETTES.map(([id, label, cols]) => `
           <label class="palette"><input type="radio" name="palette" value="${id}" ${(s.palette || 'aurora') === id ? 'checked' : ''}>
             <span class="swatches">${(cols || swatchesFor(PD.seasons.current())).map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>${label}</span></label>`).join('')}
+          ${PD.rewards.REWARDS.filter((r) => r.type === 'theme').map((r) => {
+            const un = PD.rewards.isUnlocked(r);
+            return `<label class="palette${un ? '' : ' locked'}" title="${un ? 'Unlocked with a badge' : '🔒 Unlock with a badge — see the Locker in My workout'}"><input type="radio" name="palette" value="${r.id}" ${(s.palette || 'aurora') === r.id ? 'checked' : ''} ${un ? '' : 'disabled'}>
+              <span class="swatches">${r.preview.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>${un ? '🎁' : '🔒'} ${esc(r.name)}</span></label>`;
+          }).join('')}
         </div>
 
         <h3 class="sub">Weather location</h3>

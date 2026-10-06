@@ -28,6 +28,8 @@
   function heroFx() {
     if (PD.fx.reduce()) return '';
     const sp = special();
+    const reward = !sp && PD.rewards?.heroFx();
+    if (reward) return reward; // an equipped header effect wins over seasonal particles
     const palette = PD.store.get('settings').palette;
     const icons = sp?.fx || (isSeasonal(palette) ? FX[resolve(palette)] : null);
     if (!icons) return '';
