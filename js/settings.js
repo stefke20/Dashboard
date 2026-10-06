@@ -89,7 +89,8 @@
       ios: '<p>On iPhone: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.</p>',
       manual: '<p>On your phone, open this page in Chrome (Android) or Safari (iPhone) and choose <b>Install app</b> / <b>Add to Home Screen</b> from the browser menu.</p>',
     }[st];
-    return `<h3 class="sub">Phone app</h3><div class="install-card"><img src="icons/icon-192.png" alt=""><div>${body}</div></div>`;
+    return `<h3 class="sub">Phone app</h3><div class="install-card"><img src="icons/icon-192.png" alt=""><div>${body}</div></div>
+      <div class="row gap wrap app-ver"><span class="muted small grow">App version <b>${PD.pwa.version}</b> — compare with the latest update to check you're up to date.</span><button type="button" class="btn sm ghost" id="checkUpdate">↻ Check for update</button></div>`;
   }
 
   function googleSection() {
@@ -148,6 +149,7 @@
     if (na) na.onclick = async () => { if (await PD.reminders.ask()) { na.parentElement.remove(); PD.reminders.notify('Notifications on 🔔', 'You will get reminders here.'); } };
     const inst = $('#installApp', body);
     if (inst) inst.onclick = async () => { if (await PD.pwa.install()) close(); };
+    const upd = $('#checkUpdate', body); if (upd) upd.onclick = () => { upd.disabled = true; upd.textContent = 'Updating…'; PD.pwa.update(); };
   }
 
   function saveGoogle(f) {

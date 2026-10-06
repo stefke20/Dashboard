@@ -20,6 +20,8 @@
       { icon: '🧩', label: 'Customise home layout', run: () => { go('home'); after(PD.home.customize); }, kw: 'cards order hide' },
       { icon: '📊', label: 'Your week in review', run: () => PD.review.open(), kw: 'summary stats wrapped' },
       { icon: '🏆', label: 'Achievements & XP', run: () => PD.game.gallery(), kw: 'badges level game trophies' },
+      { icon: '🎲', label: 'Random workout', run: () => PD.randomizer.open(), kw: 'shuffle generate surprise quick workout minutes' },
+      { icon: '🗓️', label: 'Random programme', run: () => PD.randomizer.programme(), kw: 'shuffle generate plan weeks' },
       { icon: '🎁', label: 'Open the Locker (rewards)', run: () => PD.rewards.locker(), kw: 'themes unlock rewards skins confetti' },
       { icon: '🔊', label: 'Read my briefing aloud', run: () => PD.daily.speakBriefing(), kw: 'speak morning' },
       { icon: '💧', label: 'Log a glass of water', run: () => { const d = store.get('diet'); d.water[todayKey()] = (d.water[todayKey()] || 0) + 1; store.save('diet'); PD.toast(`💧 ${d.water[todayKey()]} glasses today`); PD.app.renderCurrent(); }, kw: 'drink hydrate' },

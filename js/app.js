@@ -88,6 +88,13 @@
   if (standalone()) document.documentElement.classList.add('standalone');
 
   PD.pwa = {
+    version: 'v13', // keep in sync with VERSION in sw.js
+    /** Ask the service worker for a fresh copy of the app, then reload. */
+    async update() {
+      try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch { /* offline */ }
+      try { const keys = await caches.keys(); await Promise.all(keys.map((k) => caches.delete(k))); } catch { /* no cache api */ }
+      location.reload();
+    },
     standalone,
     status() {
       if (standalone()) return 'installed';

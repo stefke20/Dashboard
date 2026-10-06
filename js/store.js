@@ -23,6 +23,9 @@
         ['pushup', 'reps', 12], ['pike', 'reps', 8], ['dips', 'reps', 12], ['taps', 'time', 30], ['superman', 'reps', 12]]),
       R('Band Strength', '🎗️', 'pink', 3, 30, 60, [
         ['b-squat', 'reps', 15], ['b-row', 'reps', 15], ['b-press', 'reps', 12], ['b-goodmorning', 'reps', 12], ['b-pullapart', 'reps', 15], ['b-curl', 'reps', 15]]),
+      R('Head to Toe', '🧍', 'peach', 2, 20, 60, [
+        ['widepush', 'reps', 10], ['yraise', 'reps', 12], ['chairless-dip', 'reps', 12], ['sideplankdip', 'reps', 10, true], ['heeltap', 'time', 30],
+        ['curtsy', 'reps', 10, true], ['slbridge', 'reps', 10, true], ['sidelegraise', 'reps', 12, true], ['slcalf', 'reps', 15, true], ['bearcrawl', 'time', 30]]),
       R('Morning Mobility', '🌅', 'mint', 1, 5, 0, [
         ['catcow', 'time', 40], ['child', 'time', 40], ['cobra', 'time', 30], ['hipflexor', 'time', 30, true], ['toetouch', 'time', 30], ['sidebend', 'time', 30], ['armcircle', 'time', 30]]),
     ];
@@ -171,6 +174,13 @@
       if (r && localStorage.getItem(`${PREFIX}workouts`) && !w.routines.some((x) => x.name === r.name)) {
         w.routines.push({ ...r, id: `r-band-${Date.now().toString(36)}` });
         w.migrations.push('band-routine'); save('workouts');
+      }
+    }
+    if (!w.migrations.includes('h2t-routine')) {
+      const r = defaultRoutines().find((x) => x.name === 'Head to Toe');
+      if (r && localStorage.getItem(`${PREFIX}workouts`) && !w.routines.some((x) => x.name === r.name)) {
+        w.routines.push({ ...r, id: `r-h2t-${Date.now().toString(36)}` });
+        w.migrations.push('h2t-routine'); save('workouts');
       }
     }
   }

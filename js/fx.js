@@ -27,7 +27,7 @@
   }
 
   /** Confetti burst on a full-screen canvas. The style can be changed with an unlocked reward. */
-  const EMOJI = { emoji: ['💪', '🔥', '⭐', '🏆', '⚡'], fruit: ['🍎', '🥑', '🍓', '🍌', '🥕', '🍇'], lightning: ['⚡', '⚡', '✨', '⚡'] };
+  const EMOJI = { emoji: ['💪', '🔥', '⭐', '🏆', '⚡'], fruit: ['🍎', '🥑', '🍓', '🍌', '🥕', '🍇'], lightning: ['⚡', '⚡', '✨', '⚡'], coins: ['🪙', '🪙', '💰', '✨'], balloons: ['🎈', '🎈', '🎉', '🎈'], snow: ['❄️', '❄️', '✨', '☃️'], leaves: ['🍃', '🍂', '🍁', '🍃'] };
   function star(ctx, r) {
     ctx.beginPath();
     for (let i = 0; i < 10; i++) { const a = (i * Math.PI) / 5 - Math.PI / 2; const rr = i % 2 ? r * 0.45 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
@@ -82,7 +82,7 @@
   /* ---------- audio ---------- */
   let audio;
   // sound packs (unlockable): oscillator shape, length and loudness
-  const PACKS = { default: ['sine', 1, 1], arcade: ['square', 0.8, 0.45], '8bit': ['square', 0.6, 0.4], chimes: ['triangle', 2.6, 1.1] };
+  const PACKS = { default: ['sine', 1, 1], arcade: ['square', 0.8, 0.45], '8bit': ['square', 0.6, 0.4], chimes: ['triangle', 2.6, 1.1], marimba: ['sine', 0.45, 1.4], bubbly: ['sine', 0.3, 1.1] };
   function beep(freq = 880, dur = 0.12, vol = 0.18) {
     const [wave, len, loud] = PACKS[PD.rewards?.equipped('sound')] || PACKS.default;
     dur *= len; vol *= loud;
@@ -94,11 +94,12 @@
       g.gain.setValueAtTime(0, audio.currentTime);
       g.gain.linearRampToValueAtTime(vol, audio.currentTime + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
+      if (wave === 'sine' && len < 0.35) o.frequency.exponentialRampToValueAtTime(freq * 1.6, audio.currentTime + dur);
       o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur + 0.02);
     } catch { /* audio not available */ }
   }
   const chime = () => { beep(660, 0.14); setTimeout(() => beep(990, 0.22), 140); };
-  const FANFARES = { arcade: [392, 523, 659, 784, 1047, 1319], '8bit': [523, 523, 784, 1047], chimes: [880, 1175, 1568, 1760] };
+  const FANFARES = { arcade: [392, 523, 659, 784, 1047, 1319], '8bit': [523, 523, 784, 1047], chimes: [880, 1175, 1568, 1760], marimba: [523, 659, 784, 659, 1047], bubbly: [660, 880, 1175, 1568, 2093] };
   const fanfare = () => {
     const notes = FANFARES[PD.rewards?.equipped('sound')] || [523, 659, 784, 1047];
     notes.forEach((f, i) => setTimeout(() => beep(f, 0.25, 0.2), i * (notes.length > 4 ? 90 : 140)));

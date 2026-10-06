@@ -136,6 +136,100 @@
     ['level-15', '🦸', 'Hero', 'Reach level 15', 'gold', 'Levels', 'level', 15],
     ['level-30', '🌌', 'Mythic', 'Reach level 30', 'epic', 'Levels', 'level', 30],
     ['collector', '🧸', 'Collector', 'Unlock 25 badges', 'gold', 'Levels', 'badgesUnlocked', 25],
+    // ---- third wave: milestone ladders ----
+    ['w-5', '🌱', 'Getting started', 'Finish 5 workouts', 'bronze', 'Training', 'workouts', 5],
+    ['w-25', '🎽', 'Quarter century', 'Finish 25 workouts', 'bronze', 'Training', 'workouts', 25],
+    ['w-75', '🥉', 'Seventy-five', 'Finish 75 workouts', 'silver', 'Training', 'workouts', 75],
+    ['w-150', '🥈', '150 club', 'Finish 150 workouts', 'silver', 'Training', 'workouts', 150],
+    ['w-250', '🥇', '250 club', 'Finish 250 workouts', 'gold', 'Training', 'workouts', 250],
+    ['w-300', '🏛️', 'Spartan', 'Finish 300 workouts', 'gold', 'Training', 'workouts', 300],
+    ['w-350', '🗻', '350 club', 'Finish 350 workouts', 'gold', 'Training', 'workouts', 350],
+    ['w-400', '🎖️', '400 club', 'Finish 400 workouts', 'gold', 'Training', 'workouts', 400],
+    ['w-450', '🌠', '450 club', 'Finish 450 workouts', 'epic', 'Training', 'workouts', 450],
+    ['w-500', '🏆', 'Five hundred', 'Finish 500 workouts', 'epic', 'Training', 'workouts', 500],
+    ['w-600', '🛡️', '600 club', 'Finish 600 workouts', 'epic', 'Training', 'workouts', 600],
+    ['w-750', '🔱', '750 club', 'Finish 750 workouts', 'epic', 'Training', 'workouts', 750],
+    ['w-1000', '♾️', 'One thousand', 'Finish 1,000 workouts', 'epic', 'Training', 'workouts', 1000],
+    ['s-5', '🕯️', 'Warming up', 'Work out 5 days in a row', 'bronze', 'Training', 'streak', 5],
+    ['s-10', '🧨', 'Ten-day fuse', 'Work out 10 days in a row', 'silver', 'Training', 'streak', 10],
+    ['s-21', '🧱', 'Habit formed', 'Work out 21 days in a row', 'gold', 'Training', 'streak', 21],
+    ['s-30', '🌕', 'Full moon', 'Work out 30 days in a row', 'epic', 'Training', 'streak', 30],
+    ['s-50', '☄️', 'Comet streak', 'Work out 50 days in a row', 'epic', 'Training', 'streak', 50],
+    ['m-100', '⏲️', 'Hundred minutes', '100 minutes of home workouts', 'bronze', 'Training', 'minutes', 100],
+    ['m-500', '⌛', 'Time keeper', '500 minutes of home workouts', 'bronze', 'Training', 'minutes', 500],
+    ['m-2000', '🕰️', 'Clockwork', '2,000 minutes of home workouts', 'silver', 'Training', 'minutes', 2000],
+    ['m-3000', '🎞️', 'Feature length', '3,000 minutes of home workouts', 'gold', 'Training', 'minutes', 3000],
+    ['m-7500', '🛰️', 'Satellite', '7,500 minutes of home workouts', 'epic', 'Training', 'minutes', 7500],
+    ['m-10000', '🧭', 'Ten thousand', '10,000 minutes of home workouts', 'epic', 'Training', 'minutes', 10000],
+    ['k-1000', '🪵', 'Kindling', 'Burn 1,000 kcal in workouts', 'bronze', 'Training', 'kcal', 1000],
+    ['k-2500', '🍕', 'Pizza burner', 'Burn 2,500 kcal in workouts', 'bronze', 'Training', 'kcal', 2500],
+    ['k-10000', '🚂', 'Steam engine', 'Burn 10,000 kcal in workouts', 'silver', 'Training', 'kcal', 10000],
+    ['k-35000', '☀️', 'Solar flare', 'Burn 35,000 kcal in workouts', 'gold', 'Training', 'kcal', 35000],
+    ['k-50000', '💥', 'Supernova', 'Burn 50,000 kcal in workouts', 'epic', 'Training', 'kcal', 50000],
+    ['g-2', '✌️', 'Double goal', 'Hit your weekly goal 2 times', 'bronze', 'Training', 'goalWeeks', 2],
+    ['g-8', '📈', 'Consistent', 'Hit your weekly goal 8 times', 'silver', 'Training', 'goalWeeks', 8],
+    ['g-12', '🗓️', 'A quarter', 'Hit your weekly goal 12 times', 'gold', 'Training', 'goalWeeks', 12],
+    ['g-26', '🌗', 'Half a year', 'Hit your weekly goal 26 times', 'gold', 'Training', 'goalWeeks', 26],
+    ['g-52', '🎆', 'Full year', 'Hit your weekly goal 52 times', 'epic', 'Training', 'goalWeeks', 52],
+    ['r-3', '🧳', 'Explorer', 'Do 3 different routines', 'bronze', 'Training', 'routines', 3],
+    ['r-10', '🗺️', 'Globetrotter', 'Do 10 different routines', 'gold', 'Training', 'routines', 10],
+    ['p-2', '📘', 'Second semester', 'Complete 2 programmes', 'silver', 'Training', 'programmes', 2],
+    ['p-5', '🧑‍🏫', 'Professor', 'Complete 5 programmes', 'epic', 'Training', 'programmes', 5],
+    ['km-100', '🚲', 'Century ride', '100 km on Strava', 'silver', 'Strava', 'km', 100],
+    ['km-250', '🗾', 'Road tripper', '250 km on Strava', 'silver', 'Strava', 'km', 250],
+    ['km-1000', '🌍', 'Thousand km', '1,000 km on Strava', 'epic', 'Strava', 'km', 1000],
+    ['strava-50', '📶', 'Signal strong', '50 activities on Strava', 'gold', 'Strava', 'stravaN', 50],
+    ['strava-100', '🏅', 'Hundred tracked', '100 activities on Strava', 'epic', 'Strava', 'stravaN', 100],
+    ['h-3', '🌱', 'Seedling', '3-day streak on any habit', 'bronze', 'Habits', 'habitBest', 3],
+    ['h-14', '🌿', 'Two weeks strong', '14-day streak on any habit', 'silver', 'Habits', 'habitBest', 14],
+    ['h-50', '🌳', 'Deep roots', '50-day streak on any habit', 'gold', 'Habits', 'habitBest', 50],
+    ['h-200', '🏔️', 'Mountain habit', '200-day streak on any habit', 'epic', 'Habits', 'habitBest', 200],
+    ['h-365', '🌞', 'Every single day', '365-day streak on any habit', 'epic', 'Habits', 'habitBest', 365],
+    ['pf-5', '💫', 'High five', '5 perfect habit days', 'bronze', 'Habits', 'perfect', 5],
+    ['pf-30', '🎯', 'Bullseye month', '30 perfect habit days', 'gold', 'Habits', 'perfect', 30],
+    ['pf-50', '🏵️', 'Flawless fifty', '50 perfect habit days', 'gold', 'Habits', 'perfect', 50],
+    ['pf-100', '👼', 'Perfectionist', '100 perfect habit days', 'epic', 'Habits', 'perfect', 100],
+    ['mood-7', '🙂', 'Check-in', 'Log your mood on 7 days', 'bronze', 'Habits', 'moodDays', 7],
+    ['mood-100', '🧘', 'Self-aware', 'Log your mood on 100 days', 'epic', 'Habits', 'moodDays', 100],
+    ['fs-14', '🥦', 'Fortnight fed', 'Log your food 14 days in a row', 'bronze', 'Food', 'foodStreak', 14],
+    ['fs-30', '🍽️', 'Month of meals', 'Log your food 30 days in a row', 'silver', 'Food', 'foodStreak', 30],
+    ['fd-60', '🍱', 'Meal tracker', 'Log your food on 60 days', 'silver', 'Food', 'foodDays', 60],
+    ['fd-200', '📖', 'Food diary', 'Log your food on 200 days', 'gold', 'Food', 'foodDays', 200],
+    ['fd-365', '🧺', 'Year of meals', 'Log your food on 365 days', 'epic', 'Food', 'foodDays', 365],
+    ['wa-7', '💦', 'Splash', 'Hit your water goal on 7 days', 'bronze', 'Food', 'water', 7],
+    ['wa-30', '🐬', 'Dolphin', 'Hit your water goal on 30 days', 'silver', 'Food', 'water', 30],
+    ['wa-100', '🌧️', 'Rainmaker', 'Hit your water goal on 100 days', 'gold', 'Food', 'water', 100],
+    ['wa-200', '🌊', 'Ocean', 'Hit your water goal on 200 days', 'epic', 'Food', 'water', 200],
+    ['fo-1', '🎬', 'First focus', 'Finish your first focus session', 'bronze', 'Mind', 'focus', 1],
+    ['fo-25', '🔦', 'Spotlight', 'Finish 25 focus sessions', 'silver', 'Mind', 'focus', 25],
+    ['fo-200', '🦉', 'Wise owl', 'Finish 200 focus sessions', 'epic', 'Mind', 'focus', 200],
+    ['fm-1500', '📚', 'Bookworm', '25 hours of focus sessions', 'silver', 'Mind', 'focusMin', 1500],
+    ['fm-3000', '🧠', 'Big brain', '50 hours of focus sessions', 'gold', 'Mind', 'focusMin', 3000],
+    ['fm-6000', '🌌', 'Hundred hours', '100 hours of focus sessions', 'epic', 'Mind', 'focusMin', 6000],
+    ['fa-5', '🍵', 'Patience', 'Complete 5 fasts', 'bronze', 'Mind', 'fasts', 5],
+    ['fa-25', '🕊️', 'Discipline', 'Complete 25 fasts', 'gold', 'Mind', 'fasts', 25],
+    ['fa-50', '🏯', 'Master of fasting', 'Complete 50 fasts', 'epic', 'Mind', 'fasts', 50],
+    ['fx-20', '🌘', 'Twenty hours', 'Complete a 20-hour fast', 'silver', 'Mind', 'fastMax', 20],
+    ['fx-24', '🌑', 'Full-day fast', 'Complete a 24-hour fast', 'gold', 'Mind', 'fastMax', 24],
+    ['bd-10', '✔️', 'Done & dusted', 'Move 10 cards to Done', 'bronze', 'Board', 'boardDone', 10],
+    ['bd-50', '📤', 'Delivery', 'Move 50 cards to Done', 'silver', 'Board', 'boardDone', 50],
+    ['bd-250', '🏗️', 'Builder', 'Move 250 cards to Done', 'epic', 'Board', 'boardDone', 250],
+    ['nt-25', '✍️', 'Writer', 'Write 25 notes', 'silver', 'Board', 'notes', 25],
+    ['nt-50', '📓', 'Author', 'Write 50 notes', 'gold', 'Board', 'notes', 50],
+    ['bc-50', '🧷', 'Organiser', 'Create 50 cards on your board', 'bronze', 'Board', 'boardCards', 50],
+    ['bc-100', '🗄️', 'Archivist', 'Create 100 cards on your board', 'silver', 'Board', 'boardCards', 100],
+    ['lv-2', '🐣', 'Hatched', 'Reach level 2', 'bronze', 'Levels', 'level', 2],
+    ['lv-3', '🌿', 'Sprout', 'Reach level 3', 'bronze', 'Levels', 'level', 3],
+    ['lv-7', '🎲', 'Lucky seven', 'Reach level 7', 'silver', 'Levels', 'level', 7],
+    ['lv-12', '🧗', 'Climber', 'Reach level 12', 'silver', 'Levels', 'level', 12],
+    ['lv-25', '🪐', 'Orbit', 'Reach level 25', 'gold', 'Levels', 'level', 25],
+    ['lv-35', '🔮', 'Oracle', 'Reach level 35', 'epic', 'Levels', 'level', 35],
+    ['lv-40', '🌋', 'Volcanic', 'Reach level 40', 'epic', 'Levels', 'level', 40],
+    ['lv-50', '🏰', 'Grandmaster', 'Reach level 50', 'epic', 'Levels', 'level', 50],
+    ['col-10', '🎒', 'Starter pack', 'Unlock 10 badges', 'bronze', 'Levels', 'badgesUnlocked', 10],
+    ['col-50', '🧳', 'Hoarder', 'Unlock 50 badges', 'gold', 'Levels', 'badgesUnlocked', 50],
+    ['col-75', '🏺', 'Curator', 'Unlock 75 badges', 'epic', 'Levels', 'badgesUnlocked', 75],
+    ['col-100', '🗝️', 'Keymaster', 'Unlock 100 badges', 'epic', 'Levels', 'badgesUnlocked', 100],
   ].map(([id, icon, name, desc, tier, cat, key, target]) => ({ id, icon, name, desc, tier, cat, key, target }));
 
   function state() {
@@ -169,7 +263,7 @@
     const el = document.createElement('div');
     if (item.type === 'level') {
       el.className = 'levelup';
-      el.innerHTML = `<div class="levelup-inner"><span class="small">LEVEL UP</span><div class="level-medal big"><b>${item.xp.level}</b></div><h2>${esc(item.xp.title)}</h2><p>${fmt.num(item.xp.total)} XP · next level at ${fmt.num(item.xp.to)}</p></div>`;
+      el.innerHTML = `<div class="levelup-inner"><span class="small">LEVEL UP</span><span class="medal-frame big"><span class="medal-ring"><div class="level-medal big"><b>${item.xp.level}</b></div></span></span><h2>${esc(item.xp.title)}</h2><p>${fmt.num(item.xp.total)} XP · next level at ${fmt.num(item.xp.to)}</p></div>`;
       PD.fx.confetti({ count: 200 }); PD.fx.fanfare?.();
     } else {
       const rw = PD.rewards?.forBadge(item.b.id);
@@ -204,7 +298,7 @@
     const nextUp = badges.filter((b) => !b.done).sort((a, b) => b.cur / b.target - a.cur / a.target)[0];
     el.innerHTML = `
       <div class="game">
-        <div class="level-medal" title="Level ${xp.level}"><b>${xp.level}</b></div>
+        <span class="medal-frame"><span class="medal-ring"><div class="level-medal" title="Level ${xp.level}"><b>${xp.level}</b></div></span></span>
         <div class="game-main">
           <div class="game-top"><h2>${esc(xp.title)} <span class="muted small">· level ${xp.level}</span></h2>${PD.rewards?.title() ? `<span class="title-pill">🏷️ ${esc(PD.rewards.title())}</span>` : ''}${xp.today ? `<span class="pill small mint">+${xp.today} XP today</span>` : ''}</div>
           <div class="xp-bar"><i style="width:${pct}%"></i></div>
@@ -222,13 +316,16 @@
     PD.fx.countUp(el);
   }
 
+  let galShow = 'all';
   function gallery() {
-    const { xp, badges } = state();
+    const { xp, badges: all } = state();
+    const badges = all.filter((b) => galShow === 'all' || (galShow === 'done' ? b.done : !b.done));
     const cats = [...new Set(badges.map((b) => b.cat))];
     const SRC = { workouts: '🏋️ Workouts', strava: '🚴 Strava', habits: '✅ Habits', food: '🥗 Food logging', water: '💧 Water goals', focus: '🍅 Focus', fasting: '⏳ Fasting', tasks: '📋 Tasks & cards' };
     PD.modal('Achievements', `
       <div class="row gap"><span class="muted small grow">Each badge unlocks a reward: themes, celebrations, effects and more.</span><button class="btn sm" id="galLocker">🎁 Open Locker</button></div>
       <div class="xp-sources">${Object.entries(xp.src).filter(([, v]) => v).map(([k, v]) => `<span class="pill">${SRC[k]} <b>${fmt.num(v)}</b></span>`).join('')}</div>
+      <div class="chips">${[['all', `All ${all.length}`], ['done', `✓ Unlocked ${all.filter((b) => b.done).length}`], ['todo', `🔒 To do ${all.filter((b) => !b.done).length}`]].map(([k, l]) => `<button class="chip${galShow === k ? ' active' : ''}" data-gal="${k}">${l}</button>`).join('')}</div>
       <p class="muted small">You earn XP for everything you log: workouts (more for longer and programme sessions), Strava activities, habits, food and water, focus sessions, fasts and finished tasks.</p>
       ${cats.map((c) => `<h3 class="sub">${esc(c)}</h3><div class="badge-grid">${badges.filter((b) => b.cat === c).map((b) => `
         <div class="badge-item ${b.done ? '' : 'locked'}">
@@ -237,7 +334,10 @@
           ${PD.rewards?.forBadge(b.id) ? `<span class="gift small">🎁 ${esc(PD.rewards.forBadge(b.id).name)}</span>` : ''}
           ${b.done ? `<span class="small tier-${b.tier}">${b.tier[0].toUpperCase() + b.tier.slice(1)}${b.at ? ` · ${esc(fmt.dayMonth(PD.parseKey(b.at)))}` : ''}</span>`
             : `<span class="mini-bar"><i style="width:${(b.cur / b.target) * 100}%"></i></span><span class="small muted">${fmt.num(b.cur)} / ${fmt.num(b.target)}</span>`}
-        </div>`).join('')}</div>`).join('')}`, (body) => { $('#galLocker', body).onclick = () => PD.rewards.locker(); }, 'wide');
+        </div>`).join('')}</div>`).join('')}`, (body, close) => {
+      $('#galLocker', body).onclick = () => PD.rewards.locker();
+      $$('[data-gal]', body).forEach((c) => (c.onclick = () => { galShow = c.dataset.gal; gallery(); }));
+    }, 'wide');
   }
 
   PD.game = { compute, state, check, card, gallery, xpWorkout };

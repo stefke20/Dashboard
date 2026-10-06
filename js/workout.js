@@ -9,7 +9,7 @@
   const REP_SECONDS = 3;   // used to estimate the duration of rep-based sets
   const SWITCH_SECONDS = 5;
 
-  let libCat = 'All'; let libEquip = 'any'; let libQuery = '';
+  let libCat = 'All'; let libEquip = 'any'; let libQuery = ''; let libMuscle = 'any';
 
   /* ---------------- helpers ---------------- */
   const allExercises = () => [...X().list, ...W().custom];
@@ -75,6 +75,7 @@
         <div><h1>My workout</h1><p class="muted">Build your own routines from ${X().list.length}+ home exercises, then press play.</p></div>
         <div class="row gap">
           <button class="btn ghost" id="wkPrefs">⚙ Player</button>
+          <button class="btn ghost" id="wkRandom">🎲 Random</button>
           <button class="btn" id="wkNew">+ New routine</button>
         </div>
       </div>
@@ -95,7 +96,7 @@
         </div>
       </div>
 
-      <div class="section-head"><h2 class="section-title">Programmes</h2><button class="btn sm ghost" id="progNew">+ Build a programme</button></div>
+      <div class="section-head"><h2 class="section-title">Programmes</h2><span class="row gap wrap"><button class="btn sm ghost" id="progRandom">🎲 Random programme</button><button class="btn sm ghost" id="progNew">+ Build a programme</button></span></div>
       <div id="programs"></div>
 
       <h2 class="section-title">My routines</h2>
@@ -112,6 +113,10 @@
             <option value="any">Any equipment</option>
             ${Object.entries(X().EQUIP).map(([k, v]) => `<option value="${k}" ${k === libEquip ? 'selected' : ''}>${v}</option>`).join('')}
           </select>
+          <select id="libMuscle" aria-label="Muscle group">
+            <option value="any">Any muscle</option>
+            ${Object.keys(X().MUSCLES).map((m) => `<option ${m === libMuscle ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
           <input id="libSearch" type="search" placeholder="Search exercises…" value="${esc(libQuery)}">
         </div>
       </div>
@@ -120,11 +125,14 @@
     PD.game.card($('#gameCard')); PD.programs.render($('#programs')); renderRoutines(); renderLibrary();
     $('#progNew').onclick = () => PD.programs.builder();
     $('#wkNew').onclick = () => editor();
+    $('#wkRandom').onclick = () => PD.randomizer.open();
+    $('#progRandom').onclick = () => PD.randomizer.programme();
     $('#wkPrefs').onclick = prefsModal;
     $('#wkGoal').onclick = prefsModal;
     $('#exCustom').onclick = () => customExerciseModal();
     $$('#libCats .chip').forEach((c) => (c.onclick = () => { libCat = c.dataset.c; $$('#libCats .chip').forEach((x) => x.classList.toggle('active', x === c)); renderLibrary(); }));
     $('#libEquip').onchange = (e) => { libEquip = e.target.value; renderLibrary(); };
+    $('#libMuscle').onchange = (e) => { libMuscle = e.target.value; renderLibrary(); };
     $('#libSearch').oninput = PD.debounce((e) => { libQuery = e.target.value; renderLibrary(); }, 120);
   }
 
@@ -148,7 +156,7 @@
           <button class="icon-btn sm" data-dup="${r.id}" title="Duplicate" aria-label="Duplicate ${esc(r.name)}"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="3"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button>
         </div>
       </article>`;
-    }).join('') + `<button class="routine add" id="routineAdd"><span>＋</span>Create a routine</button>`;
+    }).join('') + `<button class="routine add" id="routineAdd"><span>＋</span>Create a routine</button><button class="routine add rnd" id="routineRandom"><span>🎲</span>Random workout<small class="muted">Pick a time, get a workout</small></button>`;
     $$('[data-start]', el).forEach((b) => (b.onclick = () => start(b.dataset.start)));
     $$('[data-edit]', el).forEach((b) => (b.onclick = () => editor(W().routines.find((r) => r.id === b.dataset.edit))));
     $$('[data-sched]', el).forEach((b) => (b.onclick = () => scheduleModal(W().routines.find((r) => r.id === b.dataset.sched))));
@@ -158,12 +166,14 @@
       store.save('workouts'); renderRoutines(); PD.toast('Routine duplicated');
     }));
     $('#routineAdd').onclick = () => editor();
+    $('#routineRandom').onclick = () => PD.randomizer.open();
   }
 
   function filtered() {
     const q = PD.norm(libQuery);
     return allExercises().filter((e) => (libCat === 'All' || e.cat === libCat)
       && (libEquip === 'any' || (e.equip || 'none') === libEquip)
+      && (libMuscle === 'any' || X().works(e, libMuscle))
       && (!q || PD.norm(`${e.name} ${e.muscles || ''} ${e.cat}`).includes(q)));
   }
 

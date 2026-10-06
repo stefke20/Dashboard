@@ -47,7 +47,7 @@
 
   /** Session templates of a programme (custom programmes use your routines). */
   function sessions(p) {
-    if (!p.custom) return p.sessions;
+    if (!p.custom || p.sessions) return p.sessions; // built-in or randomly generated
     return (p.routineIds || []).map((id) => W().routines.find((r) => r.id === id)).filter(Boolean)
       .map((r) => ({ name: r.name, items: r.items, rounds: r.rounds, rest: r.rest, roundRest: r.roundRest }));
   }
@@ -236,8 +236,8 @@
         <div class="row gap wrap"><label class="grow">Name<input name="name" required maxlength="40" value="${esc(d.name)}" placeholder="e.g. Summer shape-up"></label>
           <label style="width:90px">Emoji<input name="emoji" maxlength="4" value="${esc(d.emoji)}"></label></div>
         <div class="row gap wrap">${num('weeks', d.weeks, 1, 16, 'Length', 'weeks')}${num('perWeek', d.perWeek, 1, 7, 'Sessions', 'per week')}</div>
-        <label>Rotate through these routines (in this order)</label>
-        <div class="pick-routines">${routines.map((r) => `<label class="toggle"><input type="checkbox" name="rt" value="${r.id}" ${d.routineIds.includes(r.id) ? 'checked' : ''}> ${esc(r.emoji)} ${esc(r.name)} <span class="muted small">~${Math.round(PD.workout.estimate(r) / 60)} min</span></label>`).join('')}</div>
+        ${d.sessions ? `<p class="muted small">🎲 Random sessions: ${d.sessions.map((x) => esc(x.name)).join(', ')}</p>` : `<label>Rotate through these routines (in this order)</label>
+        <div class="pick-routines">${routines.map((r) => `<label class="toggle"><input type="checkbox" name="rt" value="${r.id}" ${d.routineIds.includes(r.id) ? 'checked' : ''}> ${esc(r.emoji)} ${esc(r.name)} <span class="muted small">~${Math.round(PD.workout.estimate(r) / 60)} min</span></label>`).join('')}</div>`}
         <h3 class="sub">Progression each week</h3>
         <div class="row gap wrap">${num('repStep', d.repStep, 0, 10, 'Add reps', 'per week')}${num('timeStep', d.timeStep, 0, 30, 'Add time', 's per week')}${num('roundEvery', d.roundEvery, 0, 8, 'Extra round every', 'weeks (0 = never)')}</div>
         <div class="row gap end">
@@ -256,7 +256,7 @@
       f.onsubmit = (ev) => {
         ev.preventDefault();
         const ids = $$('input[name=rt]:checked', f).map((i) => i.value);
-        if (!ids.length) { PD.toast('Pick at least one routine'); return; }
+        if (!ids.length && !d.sessions) { PD.toast('Pick at least one routine'); return; }
         const n = (k, min, max) => Math.min(max, Math.max(min, Math.round(Number(f[k].value) || 0)));
         Object.assign(d, { name: f.name.value.trim(), emoji: f.emoji.value.trim() || '📅', weeks: n('weeks', 1, 16), perWeek: n('perWeek', 1, 7),
           repStep: n('repStep', 0, 10), timeStep: n('timeStep', 0, 30), roundEvery: n('roundEvery', 0, 8), routineIds: ids });

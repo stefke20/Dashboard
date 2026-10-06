@@ -412,14 +412,122 @@
       tip: 'Bend your knees slightly to make it easier.', poses: [P({ ...BACK, l: [95, 95], a: [-96, -96], toe: 100 }), P({ t: -42, l: [140, 140], a: [125, 125], toe: 150 })] },
   );
 
+
+  /* ---------- More bodyweight moves for every muscle group ---------- */
+  const PRONE = { t: 90, l: [-90, -90], toe: -90 }; // face down, head to the right
+  const HANDS_HEAD = { a: [150, -95] }; // fingertips behind the ears
+  E.push(
+    // chest & arms
+    { id: 'diamond', name: 'Diamond push-ups', cat: 'Upper body', muscles: 'Triceps, chest', mode: 'reps', value: 8, met: 6, level: 3,
+      steps: ['Start in a high plank with your hands together under your chest, thumbs and index fingers forming a diamond.', 'Lower your chest towards your hands, elbows brushing your sides.', 'Push back up to straight arms.'],
+      tip: 'Drop to your knees if you can’t keep a straight line.', poses: [P({ t: 66, l: [-66, -66], a: [-4, -4], toe: 15 }), P({ t: 82, l: [-82, -82], a: { to: [-7.5, 8], bend: -1 }, toe: 15 })] },
+    { id: 'widepush', name: 'Wide push-ups', cat: 'Upper body', muscles: 'Chest, shoulders', mode: 'reps', value: 10, met: 6, level: 2,
+      steps: ['Start in a high plank with your hands well wider than your shoulders.', 'Lower your chest towards the floor.', 'Press back up, squeezing your chest.'],
+      tip: 'Point your fingers slightly outwards to protect your wrists.', poses: [P({ t: 66, l: [-66, -66], a: [8, 8], toe: 15 }), P({ t: 82, l: [-82, -82], a: { to: [-2, 9], bend: -1 }, toe: 15 })] },
+    { id: 'hindu', name: 'Hindu push-ups', cat: 'Upper body', muscles: 'Chest, shoulders, triceps, spine', mode: 'reps', value: 8, met: 6.5, level: 3, anchor: 'f1',
+      steps: ['Start in a downward dog with your hips high.', 'Bend your elbows and swoop your chest forward, close to the floor.', 'Push up into a cobra, chest proud, then push your hips back to the start.'],
+      tip: 'Make it one smooth, flowing motion.',
+      poses: [P({ t: 140, l: [-38, -38], a: [28, 28], toe: 20 }), P({ t: 100, l: [-82, -82], a: { to: [-1, 9], bend: -1 }, hd: -10, toe: 15 }), P({ t: 48, hd: -18, l: [-100, -100], a: [-4, -4], toe: -60 })] },
+    { id: 'chairless-dip', name: 'Floor dips', cat: 'Upper body', muscles: 'Triceps, shoulders', mode: 'reps', value: 12, met: 4, level: 1, anchor: 'w1',
+      steps: ['Sit on the floor, knees bent, hands behind you with fingers pointing to your feet.', 'Lift your hips a little off the floor.', 'Bend and straighten your elbows to lower and raise your body.'],
+      tip: 'Keep your shoulders away from your ears.',
+      poses: [P({ t: -22, l: { to: [22, 10] }, a: [-30, -30], toe: 100 }), P({ t: -42, l: { to: [21, 6] }, a: { to: [-7, 9], bend: 1 }, toe: 100 })] },
+    // back & shoulders
+    { id: 'yraise', name: 'Prone Y raises', cat: 'Upper body', muscles: 'Upper back, shoulders', mode: 'reps', value: 12, met: 3, level: 1, anchor: 'h',
+      steps: ['Lie face down with your arms overhead in a Y shape, thumbs up.', 'Squeeze your shoulder blades and lift your arms and chest.', 'Hold for a second, then lower slowly.'],
+      tip: 'Keep your neck long — look at the floor just in front of you.', poses: [P({ ...PRONE, a: [96, 96] }), P({ ...PRONE, t: 80, a: [118, 118] })] },
+    { id: 'backext', name: 'Back extensions', cat: 'Upper body', muscles: 'Lower back, glutes', mode: 'reps', value: 12, met: 3, level: 1, anchor: 'h',
+      steps: ['Lie face down, arms along your sides.', 'Lift your chest off the floor using your lower back.', 'Pause at the top, then lower with control.'],
+      tip: 'Lift only as high as feels good — no jerking.', poses: [P({ ...PRONE, a: [-88, -88] }), P({ ...PRONE, t: 70, hd: -8, a: [-112, -112] })] },
+    { id: 'goodmorning', name: 'Good mornings', cat: 'Lower body', muscles: 'Hamstrings, lower back, glutes', mode: 'reps', value: 12, met: 3.5, level: 1,
+      steps: ['Stand with feet hip-width apart, fingertips behind your ears.', 'Push your hips back and hinge forward with a flat back and soft knees.', 'Stop when you feel your hamstrings stretch, then stand back up.'],
+      tip: 'Think “hips back”, not “chest down”.', poses: [P({ ...HANDS_HEAD }), P({ t: 78, l: [12, -2], a: [72, -173] })] }, // arms keep their angle to the torso (limb angle − t)
+    // glutes, hamstrings, legs
+    { id: 'slbridge', name: 'Single-leg bridges', cat: 'Lower body', muscles: 'Glutes, hamstrings', mode: 'reps', value: 10, side: true, met: 3.5, level: 2, anchor: 'f1',
+      steps: ['Lie on your back, one knee bent, the other leg straight and lifted.', 'Push through your planted heel to lift your hips.', 'Lower slowly and repeat, then switch legs.'],
+      tip: 'Keep your hips level — don’t let one side drop.',
+      poses: [P({ ...BACK, l1: { to: [22, 0], bend: 1 }, l2: [130, 130], a: [90, 90], toe: 100 }), P({ t: -124, l1: { to: [18, 14], bend: 1 }, l2: [122, 122], a: [70, 90], toe: 100 })] },
+    { id: 'hamwalk', name: 'Hamstring walkouts', cat: 'Lower body', muscles: 'Hamstrings, glutes', mode: 'reps', value: 8, met: 4, level: 2, anchor: 'w1',
+      steps: ['Start in a glute bridge at the top.', 'Walk your heels away in small steps until your legs are almost straight.', 'Walk them back in, keeping your hips up the whole time.'],
+      tip: 'Only go as far as you can while your hips stay lifted.',
+      poses: [P({ t: -124, l: { to: [18, 14], bend: 1 }, a: [70, 90], toe: 100 }), P({ t: -100, l: { to: [32, 6], bend: 1 }, a: [80, 90], toe: 100 })] },
+    { id: 'curtsy', name: 'Curtsy lunges', cat: 'Lower body', muscles: 'Glutes, inner thighs, quads', mode: 'reps', value: 10, side: true, met: 5, level: 2, view: 'front', anchor: 'f1',
+      steps: ['Stand with feet hip-width apart, hands on your hips.', 'Step one leg diagonally behind the other, as if curtsying.', 'Bend both knees, then push back to standing.'],
+      tip: 'Keep your chest up and front knee over your ankle.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [40, -40], a2: [-40, 40] }), P({ l1: { to: [4, 21], bend: 1 }, l2: { to: [12, 19], bend: -1 }, a1: [40, -40], a2: [-40, 40] })] },
+    { id: 'revnordic', name: 'Reverse Nordic', cat: 'Lower body', muscles: 'Quads, hip flexors', mode: 'reps', value: 8, met: 3.5, level: 3, anchor: 'k1',
+      steps: ['Kneel tall with your knees hip-width apart, arms crossed or in front.', 'Lean your whole body back in one straight line from knees to head.', 'Go as far as you can control, then pull back up with your thighs.'],
+      tip: 'Don’t bend at the hips — move like a door on a hinge.', poses: [P({ l: [0, -90], a: [80, 80], toe: -90 }), P({ t: -32, l: [-32, -90], a: [60, 60], toe: -90 })] },
+    { id: 'slcalf', name: 'Single-leg calf raises', cat: 'Lower body', muscles: 'Calves', mode: 'reps', value: 15, side: true, met: 3, level: 2, tempo: 0.8, anchor: 'f1',
+      steps: ['Stand on one foot, the other foot lifted behind you.', 'Rise up onto the ball of your foot as high as you can.', 'Lower slowly all the way down.'],
+      tip: 'Lightly touch a wall for balance — the calf does the work.', poses: [P({ l2: [-5, -120], a: [4, 4] }), P({ l2: [-5, -120], a: [4, 4], toe: 25 })] },
+    { id: 'toeraise', name: 'Toe raises', cat: 'Lower body', muscles: 'Shins (tibialis)', mode: 'reps', value: 20, met: 2.5, level: 1, tempo: 0.7,
+      steps: ['Stand tall, heels on the floor.', 'Lift your toes and the front of your feet as high as you can.', 'Lower with control.'],
+      tip: 'Leaning your back against a wall makes it harder.', poses: [P({ a: [4, 4] }), P({ a: [4, 4], toe: 140 })] },
+    // hips: abductors & adductors
+    { id: 'sidelegraise', name: 'Side-lying leg raises', cat: 'Lower body', muscles: 'Outer thighs, glutes', mode: 'reps', value: 12, side: true, met: 3, level: 1, view: 'front', anchor: 'h',
+      steps: ['Lie on your side, legs straight and stacked, head resting on your arm.', 'Lift your top leg towards the ceiling, toes pointing forward.', 'Lower slowly without letting it rest.'],
+      tip: 'Keep your hips stacked — don’t roll backwards.', poses: [P({ t: -90, l: [90, 90], a1: [-180, -90], a2: [100, 60] }), P({ t: -90, l1: [128, 128], l2: [90, 90], a1: [-180, -90], a2: [100, 60] })] },
+    { id: 'adductorlift', name: 'Inner thigh lifts', cat: 'Lower body', muscles: 'Inner thighs', mode: 'reps', value: 12, side: true, met: 3, level: 1, view: 'front', anchor: 'h',
+      steps: ['Lie on your side with your top foot on the floor in front of your bottom knee.', 'Keep your bottom leg straight and lift it a few centimetres.', 'Lower slowly.'],
+      tip: 'Small and controlled is the goal.', poses: [P({ t: -90, l1: [70, 150], l2: [90, 90], a1: [-180, -90], a2: [100, 60] }), P({ t: -90, l1: [70, 150], l2: [106, 106], a1: [-180, -90], a2: [100, 60] })] },
+    { id: 'clamshell', name: 'Clamshells', cat: 'Lower body', muscles: 'Outer glutes (glute medius)', mode: 'reps', value: 15, side: true, met: 2.5, level: 1, view: 'front', anchor: 'h',
+      steps: ['Lie on your side with your knees bent and feet together.', 'Keeping your feet touching, open your top knee like a clamshell.', 'Close slowly.'],
+      tip: 'Don’t let your hips roll back as the knee opens.', poses: [P({ t: -90, l: [45, 135], a1: [-180, -90], a2: [100, 60] }), P({ t: -90, l1: [100, 166], l2: [45, 135], a1: [-180, -90], a2: [100, 60] })] },
+    // core
+    { id: 'heeltap', name: 'Heel taps', cat: 'Core', muscles: 'Obliques, abs', mode: 'time', value: 30, met: 3.5, level: 1, anchor: 'h', tempo: 0.6,
+      steps: ['Lie on your back with your knees bent and feet flat.', 'Lift your shoulders slightly off the floor, arms by your sides.', 'Reach side to side to tap each heel.'],
+      tip: 'Keep your shoulders lifted the whole set.',
+      poses: [P({ t: -66, l: { to: [22, 0] }, a1: [80, 80], a2: [60, 60], toe: 100 }), P({ t: -66, l: { to: [22, 0] }, a1: [60, 60], a2: [80, 80], toe: 100 })] },
+    { id: 'sideplankdip', name: 'Side plank hip dips', cat: 'Core', muscles: 'Obliques, waist', mode: 'reps', value: 10, side: true, met: 4, level: 2, view: 'front', anchor: 'w1',
+      steps: ['Get into a forearm side plank.', 'Lower your hip towards the floor.', 'Lift it back up past the start, squeezing your side.'],
+      tip: 'Move slowly — the burn is the point.',
+      poses: [P({ t: 76, l: [-76, -76], a1: [0, 90], a2: [100, 60] }), P({ t: 66, l: [-94, -94], a1: [0, 90], a2: [100, 60] })] },
+    { id: 'standcrunch', name: 'Standing side crunches', cat: 'Core', muscles: 'Obliques', mode: 'reps', value: 12, side: true, met: 4, level: 1, view: 'front', anchor: 'f2',
+      steps: ['Stand tall, hands behind your head, elbows wide.', 'Lift one knee out to the side while crunching that elbow down to meet it.', 'Return to standing and repeat.'],
+      tip: 'Keep your standing leg slightly soft.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [130, -150], a2: [-130, 150] }), P({ t: 18, l1: [80, -10], l2: [-4, -4], a1: [70, -170], a2: [-140, 150] })] },
+    // full body & cardio
+    { id: 'squatthrust', name: 'Squat thrusts', cat: 'Full body', muscles: 'Legs, shoulders, core, cardio', mode: 'time', value: 30, met: 8, level: 2, anchor: 'w1', tempo: 0.55,
+      steps: ['Squat down and place your hands on the floor.', 'Jump your feet back into a high plank.', 'Jump your feet back in and stand up.'],
+      tip: 'Like a burpee without the jump — keep your back flat in the plank.',
+      poses: [P({ a: [4, 4] }), P({ t: 50, l: { to: [10, 16] }, a: [6, 6], toe: 70 }), PLANK_HI, P({ t: 50, l: { to: [10, 16] }, a: [6, 6], toe: 70 })] },
+    { id: 'bearcrawl', name: 'Bear crawl', cat: 'Full body', muscles: 'Shoulders, core, quads', mode: 'time', value: 30, met: 6, level: 2, tempo: 0.5, anchor: 'h',
+      steps: ['Start on hands and toes with knees hovering just off the floor.', 'Crawl forward by moving opposite hand and foot together.', 'Keep your back flat and hips low.'],
+      tip: 'Short steps keep it controlled.',
+      poses: [P({ t: 74, l1: [22, -62], l2: [-8, -84], a1: [14, 14], a2: [-10, -10], toe: -40 }), P({ t: 74, l1: [-8, -84], l2: [22, -62], a1: [-10, -10], a2: [14, 14], toe: -40 })] },
+    { id: 'crabtoe', name: 'Crab toe touches', cat: 'Full body', muscles: 'Triceps, shoulders, core, glutes', mode: 'time', value: 30, met: 5, level: 2, tempo: 0.7, anchor: 'f1',
+      steps: ['Sit, then lift your hips into a reverse tabletop on hands and feet.', 'Kick one leg up while reaching the opposite hand to touch it.', 'Return and switch sides.'],
+      tip: 'Push your hips up between reps.',
+      poses: [P({ t: -96, l: { to: [20, 18], bend: 1 }, a: [-10, -10], toe: 100 }), P({ t: -82, l1: { to: [20, 18], bend: 1 }, l2: [150, 150], a1: [-10, -10], a2: [150, 150], toe: 100 })] },
+    { id: 'starjump', name: 'Star jumps', cat: 'Cardio', muscles: 'Full body, cardio', mode: 'reps', value: 10, met: 8.5, level: 2, view: 'front', tempo: 0.55,
+      steps: ['Start in a half squat with your arms crossed in front of you.', 'Explode up and spread your arms and legs into a star.', 'Land softly back in the half squat.'],
+      tip: 'Land quietly with bent knees.',
+      poses: [P({ l1: { to: [5, 24], bend: 1 }, l2: { to: [-5, 24], bend: -1 }, a1: [40, -40], a2: [-40, 40] }), P({ l1: [32, 32], l2: [-32, -32], a1: [140, 140], a2: [-140, -140], lift: 12, toe: 20 })] },
+    // mobility
+    { id: 'threadneedle', name: 'Thread the needle', cat: 'Mobility', muscles: 'Upper back, shoulders', mode: 'reps', value: 8, side: true, met: 2, level: 1, tempo: 1.4, anchor: 'k1',
+      steps: ['Start on hands and knees.', 'Reach one arm up to the ceiling, opening your chest.', 'Then sweep it under your body, lowering your shoulder to the floor.'],
+      tip: 'Follow your hand with your eyes.',
+      poses: [P({ t: 74, l: [0, -90], a1: [168, 168], a2: [0, 0], toe: -90 }), P({ t: 92, l: [0, -90], a1: [-50, -40], a2: [8, 30], hd: 12, toe: -90 })] },
+  );
+
   E.forEach((e) => { e.equip = e.equip || 'none'; });
 
   const CATS = ['Lower body', 'Upper body', 'Core', 'Cardio', 'Full body', 'Mobility'];
   const EQUIP = { none: 'No equipment', band: 'Resistance band', chair: 'Chair', wall: 'Wall', dumbbells: 'Dumbbells' };
 
+  /** Muscle groups for the library filter, matched against each exercise's “muscles” text. */
+  const MUSCLES = {
+    Chest: ['chest'], Back: ['back', 'lats'], Shoulders: ['shoulder'], Arms: ['triceps', 'biceps', 'arms'],
+    Abs: ['abs', 'core'], Obliques: ['oblique', 'waist'], Glutes: ['glute'], Quads: ['quad'], Hamstrings: ['hamstring'],
+    'Inner thighs': ['inner thigh', 'adductor'], 'Outer thighs': ['outer thigh', 'outer glute', 'abductor'],
+    'Calves & shins': ['calf', 'calves', 'shin'], Hips: ['hip'], Cardio: ['cardio'],
+  };
+  const works = (ex, group) => !MUSCLES[group] || MUSCLES[group].some((k) => (ex.muscles || '').toLowerCase().includes(k));
+
   PD.EXERCISES = E;
   PD.exercises = {
-    list: E, CATS, EQUIP, figure,
+    list: E, CATS, EQUIP, MUSCLES, works, figure,
     byId: (id) => E.find((e) => e.id === id) || (PD.store.get('workouts').custom || []).find((e) => e.id === id),
     videoUrl: (ex) => {
       const m = PD.store.get('workouts').media[ex.id] || ex.video;
