@@ -1,7 +1,7 @@
 /* Feel-good details: haptics, swipe between tabs, pull-to-refresh, offline indicator, keyboard shortcuts. */
 (function (PD) {
   const { $, $$ } = PD;
-  const TABS = ['home', 'health', 'workout', 'calendar', 'diet'];
+  const TABS = ['home', 'health', 'workout', 'board', 'calendar', 'diet'];
 
   PD.haptic = (ms = 12) => { try { if (PD.store.get('settings').haptics !== false) navigator.vibrate?.(ms); } catch { /* ignore */ } };
   const blocking = () => document.querySelector('#modal[open], #player, .story, .cmdk');
@@ -14,7 +14,7 @@
 
   /* ---------- swipe between tabs (and months in the calendar) ---------- */
   let sx = 0; let sy = 0; let st = 0; let tracking = false;
-  const NO_SWIPE = '.wx-hours, .chips, .table-wrap, .ex-grid.compact, input, textarea, select, .heatmap, .routine-figs, .pollen-days, .segmented, .st-tap, .scan-view';
+  const NO_SWIPE = '.wx-hours, .chips, .table-wrap, .ex-grid.compact, input, textarea, select, .heatmap, .routine-figs, .kboard, .note-editor, .pollen-days, .segmented, .st-tap, .scan-view';
   document.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1 || blocking() || e.target.closest(NO_SWIPE)) { tracking = false; return; }
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); tracking = true;
@@ -59,7 +59,7 @@
 
   /* ---------- keyboard shortcuts ---------- */
   let gPressed = 0;
-  const KEYS = { h: 'home', e: 'health', w: 'workout', c: 'calendar', d: 'diet' };
+  const KEYS = { h: 'home', e: 'health', w: 'workout', b: 'board', c: 'calendar', d: 'diet' };
   document.addEventListener('keydown', (e) => {
     if (e.target.matches?.('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey || blocking()) return;
     if (e.key === 'g') { gPressed = Date.now(); return; }
@@ -71,7 +71,7 @@
     const row = (k, t) => `<li><span>${k}</span><span>${t}</span></li>`;
     PD.modal('Keyboard shortcuts', `<ul class="shortcuts">
       ${row('<kbd>Ctrl</kbd> <kbd>K</kbd> or <kbd>/</kbd>', 'Quick actions &amp; search')}
-      ${row('<kbd>g</kbd> then <kbd>h</kbd> <kbd>e</kbd> <kbd>w</kbd> <kbd>c</kbd> <kbd>d</kbd>', 'Home, hEalth, Workout, Calendar, Diet')}
+      ${row('<kbd>g</kbd> then <kbd>h</kbd> <kbd>e</kbd> <kbd>w</kbd> <kbd>b</kbd> <kbd>c</kbd> <kbd>d</kbd>', 'Home, hEalth, Workout, Board, Calendar, Diet')}
       ${row('<kbd>r</kbd>', 'Refresh the home page')}
       ${row('<kbd>Space</kbd> / <kbd>←</kbd> <kbd>→</kbd>', 'Pause / previous / next in the workout player')}
       ${row('<kbd>?</kbd>', 'This list')}</ul>

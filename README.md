@@ -1,6 +1,6 @@
 # Daily — personal dashboard
 
-A one-page start-of-the-day dashboard with five tabs, five colour schemes (Aurora, Volt, Sunset, Ocean, Pastel), light/dark mode and smooth animations.
+A one-page start-of-the-day dashboard with six tabs, colour schemes (Aurora, Volt, Sunset, Ocean, Pastel, plus seasonal themes), light/dark mode and smooth animations.
 It's plain HTML, CSS and JavaScript with no build step and no dependencies. Your data stays in your browser's local storage.
 
 | Tab | What's on it |
@@ -8,6 +8,7 @@ It's plain HTML, CSS and JavaScript with no build step and no dependencies. Your
 | **Home** | **Air & pollen** for your town (European air-quality index, birch/alder/grass/mugwort/ragweed/olive pollen with a 3-day outlook, warnings for *your* allergies) · Greeting, date, ISO week, live clock, sunrise/sunset, year progress · weather for Westerlo (now, a rain tip, 24 h hourly, 7-day forecast) · news feed (5 headlines at a time from VRT NWS, HLN, Sporza, BBC World; add your own RSS feeds) · snapshot tiles (calories, steps, active minutes this week from workouts + Strava, water) · "Today's focus" task list (unfinished tasks carry over) · "Up next" from the calendar (including Google Calendar and planned workouts) |
 | **Health** | **Home workouts** (from My workout): weekly sessions vs goal, minutes, calories, total active minutes incl. Strava, 12-week chart, session history · **Strava**: this week's totals, year-to-date totals, a 12-week distance chart, recent activities with pace/HR, and sport filters · **Samsung Health**: CSV import (steps, weight, sleep, heart rate) · manual log · step and weight goals · 14-day steps chart and 90-day weight trend |
 | **My workout** | 66 home exercises (bodyweight, resistance band, chair, wall, dumbbells), each with an animated figure, steps, tips and a video link (or your own YouTube/GIF link) · ready-made routines (7-Minute Classic, HIIT, Core, Lower body, Upper body, Band Strength, Mobility) · a routine builder (rounds, rest, time or reps per exercise, each side, drag to reorder) · custom exercises · a full-screen guided player with countdown ring, rest timers, beeps, voice coach, pause/skip/+10 s, keyboard shortcuts and screen wake-lock · a finish screen with calories, a rating and optional Strava upload · weekly goal and streak · **multi-week programmes** (Bodyweight Basics, Strength Builder, Core 30, HIIT Burn, Band Builder, or build your own from your routines) with weekly progression, your own training days, a week-by-week plan and calendar integration |
+| **Board** | **Kanban board**: columns you can add, rename, colour and reorder; drag cards with the mouse or (long-press) on your phone; labels, due dates (shown in the calendar and "Up next"), notes and checklists · **Notes**: pinned and coloured notes with search, headings, lists and tick-able checklists, autosaved |
 | **Calendar** | Month view with events, tasks (checkable) and birthdays (yearly, shows the age) · weekly, monthly and yearly repeats · Belgian public holidays · **live Google Calendar** (all your calendars, incl. birthdays, in their own colours) · `.ics` import · next 30 days and upcoming birthdays |
 | **Diet** | Calorie and macro counter per day (breakfast, lunch, dinner, snacks) · built-in list of ~90 common (Belgian) foods · **Open Food Facts** online search · **barcode scanning with your phone camera** · quick add · "my foods" · recent foods · copy a meal from yesterday · water · targets with a BMR/TDEE calculator · 7/14/30-day chart with a target line · averages and a logging streak · full history and CSV export |
 
@@ -38,6 +39,21 @@ Opening `index.html` directly (`file://`) works too, but Strava login needs http
 - **Dark after sunset** theme, haptic feedback, swipe between tabs (and months in the calendar), pull down on Home to refresh, smooth page transitions and an offline indicator.
 - **Integrations**: a 🎵 button in the workout player opens your Spotify/YouTube Music/Apple Music playlist; planned workouts and events can be copied to Google Calendar in one tap.
 
+## Game: XP, levels and badges
+
+Everything you log earns XP: workouts (more for longer workouts and programme sessions), Strava activities, habits, food and water days, focus sessions, fasts and finished tasks/cards. Your level and title (Rookie → Mover → … → Legend) show on the Home header and at the top of *My workout*, together with 31 badges in bronze, silver, gold and epic — from *First sweat* and *Early bird* to *Habit master* and *Iron will*. New badges and level-ups pop up with a little celebration; the 🏆 button shows all badges with your progress.
+
+XP is calculated from your data, so it also counts everything you did before this feature, and it's the same on every synced device.
+
+## Spotify
+
+The *Spotify* card on Home shows what's playing (cover, progress, device) with shuffle / previous / play-pause / next, and a mini player appears in the workout player.
+Setup: create an app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), add the dashboard's address as Redirect URI, tick *Web API*, and paste the **Client ID** in *Settings → Spotify* (no secret needed). Controlling playback requires Spotify Premium; showing what's playing works with any account.
+
+## Seasonal themes
+
+Pick *Seasonal (auto)* in *Settings → Colour scheme* to follow the seasons (autumn, winter, spring, summer — or pick one yourself). The header gets falling leaves, snow, petals or summer sparkles, and special days get a touch of their own: Sinterklaas, Christmas, New Year, Valentine's Day, Easter, the Belgian National Day, Halloween — and your birthday (*Settings → Your birthday*).
+
 ## Install it as an app on your phone
 
 Open the dashboard's https address on your phone, then:
@@ -54,7 +70,7 @@ One Google connection gives you both:
 - your **Google Calendar** events and birthdays in the Calendar tab and under "Up next";
 - **sync**: everything you log (food, workouts, programmes, health, tasks, events, settings) is kept in a private, hidden *app data* file in **your own Google Drive**. Only this app with your login can read it. Changes sync a few seconds after you make them, when you reopen the app, and every 5 minutes. If both devices changed the same thing, the versions are merged so nothing gets lost.
 
-Strava and Google credentials are never synced — connect each device once.
+Strava, Google and Spotify credentials are never synced — connect each device once.
 
 One-time setup (about 5 minutes; the same steps are in *Settings → Google Calendar & sync*):
 

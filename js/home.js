@@ -334,11 +334,13 @@
         <button class="hero-btn" id="heroReview" title="Your week in review" aria-label="Your week in review"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></button>
         <button class="hero-btn" id="heroCustomize" title="Customise home" aria-label="Customise home"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg></button>
       </div>
-      <p class="eyebrow">${esc(greeting(now.getHours()))}${name ? `, ${esc(name)}` : ''} 👋</p>
+      ${PD.seasons.heroFx()}
+      <p class="eyebrow">${esc(greeting(now.getHours()))}${name ? `, ${esc(name)}` : ''} ${PD.seasons.special() ? `${PD.seasons.special().emoji} · ${esc(PD.seasons.special().text)}` : '👋'}</p>
       <h1 class="hero-day">${esc(fmt.weekday(now, 'long'))}</h1>
       <p class="hero-date">${esc(fmt.date(now, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
       <div class="hero-meta">
         <span class="pill violet">Week ${PD.isoWeek(now)}</span>
+        <a class="pill level-pill" href="#workout" title="Your level — see achievements in My workout">⭐ Lv ${PD.game.compute().level}</a>
         <span class="pill mint" id="heroClock">${fmt.time(now)}</span>
         <span class="pill peach" id="heroSun">☀ –</span>
         <span class="pill" title="${esc(m.name)} · ${m.illum}% illuminated">${m.icon} ${esc(m.name)}</span>
@@ -368,9 +370,10 @@
     news: { label: 'News', col: 'L', html: `<div class="card news-card" id="newsCard"><div class="card-head"><h2>News</h2>
       <button class="icon-btn sm" id="newsRefresh" title="Refresh" aria-label="Refresh news"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
       <div class="chips" id="newsChips"></div><div id="newsList"></div></div>` },
+    spotify: { label: 'Spotify', col: 'R', html: '<div class="card spotify-card" id="spotify"></div>' },
     dose: { label: 'Quote & on this day', col: 'L', html: '<div class="card" id="dose"></div>' },
   };
-  const DEFAULT_ORDER = ['hero', 'tiles', 'weather', 'air', 'agenda', 'habits', 'tasks', 'focus', 'news', 'dose'];
+  const DEFAULT_ORDER = ['hero', 'tiles', 'weather', 'air', 'agenda', 'habits', 'tasks', 'focus', 'spotify', 'news', 'dose'];
 
   function layout() {
     const h = store.get('settings').home || {};
@@ -427,7 +430,7 @@
     page.innerHTML = `<div class="home-grid"><div class="home-col">${col('L')}</div><div class="home-col">${col('R')}</div></div>`;
     renderHero(); renderTiles(); renderTasks(); renderAgenda();
     PD.habits.card($('#habitsCard')); PD.focus.card($('#focusCard'));
-    loadWeather(); loadNews(); PD.air.load(); PD.daily.dose();
+    loadWeather(); loadNews(); PD.air.load(); PD.daily.dose(); PD.spotify.card();
     const nr = $('#newsRefresh');
     if (nr) nr.onclick = () => {
       store.get('settings').feeds.forEach((f) => localStorage.removeItem(`pd.cache.news.${f.id}`));

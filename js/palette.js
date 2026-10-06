@@ -12,11 +12,14 @@
       { icon: '🏠', label: 'Go to Home', run: () => go('home'), kw: 'dashboard start' },
       { icon: '❤️', label: 'Go to Health', run: () => go('health'), kw: 'strava steps weight habits' },
       { icon: '🏋️', label: 'Go to My workout', run: () => go('workout'), kw: 'exercise routine training' },
+      { icon: '📋', label: 'Go to Board', run: () => go('board'), kw: 'kanban notes cards' },
+      { icon: '🗒️', label: 'New note', run: () => PD.board.newNote(), kw: 'write memo idea' },
       { icon: '📅', label: 'Go to Calendar', run: () => go('calendar'), kw: 'agenda events' },
       { icon: '🥗', label: 'Go to Diet', run: () => go('diet'), kw: 'food calories' },
       { icon: '⚙️', label: 'Open settings', run: () => PD.settings.open(), kw: 'preferences options' },
       { icon: '🧩', label: 'Customise home layout', run: () => { go('home'); after(PD.home.customize); }, kw: 'cards order hide' },
       { icon: '📊', label: 'Your week in review', run: () => PD.review.open(), kw: 'summary stats wrapped' },
+      { icon: '🏆', label: 'Achievements & XP', run: () => PD.game.gallery(), kw: 'badges level game trophies' },
       { icon: '🔊', label: 'Read my briefing aloud', run: () => PD.daily.speakBriefing(), kw: 'speak morning' },
       { icon: '💧', label: 'Log a glass of water', run: () => { const d = store.get('diet'); d.water[todayKey()] = (d.water[todayKey()] || 0) + 1; store.save('diet'); PD.toast(`💧 ${d.water[todayKey()]} glasses today`); PD.app.renderCurrent(); }, kw: 'drink hydrate' },
       { icon: '📷', label: 'Scan a barcode', run: () => { go('diet'); after(() => $('#scanBtn')?.click()); }, kw: 'food camera product' },
@@ -39,6 +42,7 @@
     const typed = [];
     if (q) {
       typed.push({ icon: '✅', label: `Add task: ${q}`, run: () => { store.get('tasks').push({ id: PD.uid(), text: q, done: false, date: todayKey() }); store.save('tasks'); PD.toast('Task added'); PD.app.renderCurrent(); }, arg: true });
+      typed.push({ icon: '📋', label: `Add card to board: ${q}`, run: () => { const b = store.get('board'); const col = b.columns[0].id; b.cards.push({ id: PD.uid(), col, title: q, notes: '', due: '', label: '', order: -Date.now(), created: new Date().toISOString(), doneAt: null }); store.save('board'); PD.toast('Card added to the board'); PD.app.renderCurrent(); }, arg: true });
       typed.push({ icon: '🔎', label: `Search food: ${q}`, run: () => { go('diet'); after(() => { const i = $('#foodQuery'); if (i) { i.value = q; i.dispatchEvent(new Event('input')); i.focus(); } }); }, arg: true });
       typed.push({ icon: '📌', label: `New event: ${q}`, run: () => { go('calendar'); after(() => PD.calendar.add({ title: q })); }, arg: true });
       const n = parseFloat(q.replace(',', '.'));

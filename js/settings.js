@@ -8,10 +8,18 @@
     ['sunset', 'Sunset', ['#e8553e', '#f2a03d', '#c2417a']],
     ['ocean', 'Ocean', ['#0f8b8d', '#2f6fde', '#3a9d5d']],
     ['pastel', 'Pastel', ['#c9b8ff', '#b8ecd7', '#ffd3b6']],
+    ['season', 'Seasonal (auto)', null],
+    ['autumn', 'Autumn 🍂', ['#c2571a', '#d9822b', '#5f7f2a']],
+    ['winter', 'Winter ❄', ['#1e3a8a', '#3b82f6', '#93c5fd']],
+    ['spring', 'Spring 🌸', ['#2f9e5b', '#8bd17c', '#f49ac1']],
+    ['summer', 'Summer ☀', ['#0891b2', '#f59e0b', '#ef476f']],
   ];
+  const swatchesFor = (id) => PALETTES.find(([p]) => p === id)?.[2];
 
   function applyTheme() {
-    document.documentElement.dataset.palette = store.get('settings').palette || 'aurora';
+    const pal = store.get('settings').palette || 'aurora';
+    document.documentElement.dataset.palette = PD.seasons.resolve(pal);
+    document.documentElement.dataset.seasonal = PD.seasons.isSeasonal(pal) ? PD.seasons.resolve(pal) : '';
     let t = store.get('settings').theme;
     if (t === 'sun') t = isNight() ? 'dark' : 'light';
     if (t === 'auto') document.documentElement.removeAttribute('data-theme');
@@ -31,6 +39,26 @@
     } catch { /* use fallback */ }
     const n = new Date(); const m = n.getHours() * 60 + n.getMinutes();
     return m < rise || m >= set;
+  }
+
+  function spotifySection() {
+    const sp = store.get('spotify');
+    return `<h3 class="sub" id="spotifySettings">Spotify</h3>
+      ${PD.spotify.connected() ? `<div class="g-status"><span class="pill mint">Connected</span> <b>${esc(sp.user || 'Spotify account')}</b><span class="spacer"></span><button type="button" class="btn sm ghost danger" id="spOff">Disconnect</button></div>
+        <p class="muted small">Play/pause/skip from the dashboard needs Spotify Premium; showing what's playing works with any account.</p>`
+      : `<details class="calc"><summary>One-time setup (2 minutes)</summary>
+          <ol class="steps small">
+            <li>Open the <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">Spotify Developer Dashboard</a>, log in and press <b>Create app</b> (any name/description).</li>
+            <li>Add this <b>Redirect URI</b>: <code class="copy">${esc(PD.spotify.redirectUri())}</code> <button type="button" class="link small" id="spCopy">copy</button></li>
+            <li>Tick <b>Web API</b>, save, then open <b>Settings</b> and copy the <b>Client ID</b> (no secret needed).</li>
+          </ol></details>
+        <div class="row gap"><input class="grow" name="spClientId" value="${esc(sp.clientId)}" placeholder="Spotify Client ID" autocomplete="off"><button type="button" class="btn spotify-btn" id="spConnect">Connect Spotify</button></div>`}`;
+  }
+  function bindSpotify(body, close) {
+    const c = $('#spConnect', body);
+    if (c) c.onclick = async () => { store.get('spotify').clientId = body.querySelector('[name=spClientId]').value.trim(); store.save('spotify'); try { await PD.spotify.connect(); } catch (e) { PD.toast(e.message); } };
+    const cp = $('#spCopy', body); if (cp) cp.onclick = () => { navigator.clipboard?.writeText(PD.spotify.redirectUri()); PD.toast('Redirect URI copied'); };
+    const off = $('#spOff', body); if (off) off.onclick = () => { PD.spotify.disconnect(); close(); open('spotify'); PD.app.renderCurrent(); };
   }
 
   function remindersSection() {
@@ -140,6 +168,7 @@
       <form id="setForm" class="form">
         <div class="row gap wrap">
           <label class="grow">Your name<input name="name" value="${esc(s.name)}" maxlength="40" placeholder="Used in the greeting"></label>
+          <label class="grow">Your birthday<input type="date" name="birthday" value="${esc(s.birthday || '')}" title="For a little surprise on the day"></label>
           <label class="grow">Theme<select name="theme">
             ${[['auto', 'Match system'], ['sun', 'Dark after sunset'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}" ${s.theme === v ? 'selected' : ''}>${l}</option>`).join('')}
           </select></label>
@@ -148,7 +177,7 @@
         <h3 class="sub">Colour scheme</h3>
         <div class="palettes" role="radiogroup">${PALETTES.map(([id, label, cols]) => `
           <label class="palette"><input type="radio" name="palette" value="${id}" ${(s.palette || 'aurora') === id ? 'checked' : ''}>
-            <span class="swatches">${cols.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>${label}</span></label>`).join('')}
+            <span class="swatches">${(cols || swatchesFor(PD.seasons.current())).map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>${label}</span></label>`).join('')}
         </div>
 
         <h3 class="sub">Weather location</h3>
@@ -171,6 +200,7 @@
         </div>
 
         ${googleSection()}
+        ${spotifySection()}
         ${remindersSection()}
         ${appSection()}
 
@@ -184,12 +214,12 @@
         <div class="row gap end"><button class="btn" type="submit">Done</button></div>
       </form>`, (body, close) => {
       const f = $('#setForm', body);
-      bindGoogle(body, close);
-      if (section === 'google') setTimeout(() => $('#googleSettings', body)?.scrollIntoView({ block: 'start' }), 50);
+      bindGoogle(body, close); bindSpotify(body, close);
+      if (section === 'google' || section === 'spotify') setTimeout(() => $(section === 'google' ? '#googleSettings' : '#spotifySettings', body)?.scrollIntoView({ block: 'start' }), 50);
       let loc = s.location;
       const prevPalette = s.palette; const prevTheme = s.theme; let saved = false;
       // live preview while picking
-      $$('input[name=palette]', body).forEach((r) => (r.onchange = () => { document.documentElement.dataset.palette = r.value; }));
+      $$('input[name=palette]', body).forEach((r) => (r.onchange = () => { document.documentElement.dataset.palette = PD.seasons.resolve(r.value); }));
       f.theme.onchange = () => { s.theme = f.theme.value; applyTheme(); s.theme = prevTheme; };
       $('#modal').addEventListener('close', () => { if (!saved) { s.palette = prevPalette; s.theme = prevTheme; applyTheme(); } }, { once: true });
 
@@ -234,7 +264,7 @@
       f.onsubmit = (e) => {
         e.preventDefault();
         const prevLoc = s.location;
-        s.name = f.name.value.trim(); s.theme = f.theme.value; s.location = loc;
+        s.name = f.name.value.trim(); s.theme = f.theme.value; s.location = loc; s.birthday = f.birthday.value;
         s.palette = f.palette.value; saved = true;
         saveGoogle(f); saveReminders(f);
         s.feeds = $$('[data-feed]', body).map((cb) => {

@@ -89,6 +89,7 @@
     }));
     out.push(...PD.gcal.eventsBetween(from, to));
     out.push(...(PD.programs?.planned(from, to) || []));
+    out.push(...(PD.board?.dueBetween(from, to) || []));
     const order = { holiday: 0, birthday: 1, google: 2, event: 2, workout: 3, task: 4 };
     return out.sort((a, b) => a.occursOn.localeCompare(b.occursOn) || (a.time || '').localeCompare(b.time || '') || order[a.type] - order[b.type]);
   }

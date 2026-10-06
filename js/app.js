@@ -1,7 +1,7 @@
 /* App shell: hash routing between tabs. */
 (function (PD) {
   const { $, $$ } = PD;
-  const PAGES = { home: PD.home, health: PD.health, workout: PD.workout, calendar: PD.calendar, diet: PD.diet };
+  const PAGES = { home: PD.home, health: PD.health, workout: PD.workout, board: PD.board, calendar: PD.calendar, diet: PD.diet };
   const TITLES = { workout: 'My workout' };
   let current = null;
 
@@ -57,10 +57,12 @@
   });
 
   // Finishes a Strava or Google login redirect if there is one (each rewrites the URL synchronously first).
-  const redirects = [PD.health.handleRedirect(), PD.google.handleRedirect()];
+  const redirects = [PD.health.handleRedirect(), PD.google.handleRedirect(), PD.spotify.handleRedirect()];
   route();
   Promise.all(redirects).then((handled) => { if (handled.some(Boolean)) route(); });
   PD.sync.init();
+  setTimeout(() => PD.game.check(), 1500); // first run adopts existing progress quietly
+  PD.seasons.greet();
 })(window.PD);
 
 /* Installable app (PWA): service worker + install prompt. */

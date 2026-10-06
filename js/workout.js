@@ -78,6 +78,7 @@
           <button class="btn" id="wkNew">+ New routine</button>
         </div>
       </div>
+      <div class="card game-card" id="gameCard"></div>
       <div class="card wk-hero">
         <div class="wk-goal">
           ${PD.ring(st.weekCount, st.goal, { size: 128, stroke: 12, color: 'var(--accent-peach-ink)', label: `${st.weekCount}/${st.goal}`, sub: 'this week' })}
@@ -116,7 +117,7 @@
       </div>
       <div class="ex-grid" id="exGrid"></div>`;
 
-    PD.programs.render($('#programs')); renderRoutines(); renderLibrary();
+    PD.game.card($('#gameCard')); PD.programs.render($('#programs')); renderRoutines(); renderLibrary();
     $('#progNew').onclick = () => PD.programs.builder();
     $('#wkNew').onclick = () => editor();
     $('#wkPrefs').onclick = prefsModal;
@@ -565,8 +566,10 @@
         <button class="pl-icon" data-act="next" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="m5 5 10 7-10 7zM19 5v14"/></svg></button>
         ${s.type !== 'work' ? '<button class="pl-chip" data-act="plus">+10 s</button>' : ''}
       </div>
-      ${nextWork && s.type === 'work' ? `<div class="pl-next">Up next: <b>${esc(nextWork.ex.name)}</b> · ${esc(fmtVal(nextWork.it))}</div>` : ''}`;
+      ${nextWork && s.type === 'work' ? `<div class="pl-next">Up next: <b>${esc(nextWork.ex.name)}</b> · ${esc(fmtVal(nextWork.it))}</div>` : ''}
+      <div class="pl-music" id="plMusic"></div>`;
     $$('[data-act]', el).forEach((b) => (b.onclick = () => act(b.dataset.act)));
+    PD.spotify.mini($('#plMusic'));
 
     // cues
     const prefs = W().prefs;
@@ -652,7 +655,7 @@
       <div class="pl-finish">
         <div class="pl-trophy">${partial ? '👏' : '🏆'}</div>
         <h2>${partial ? 'Nice effort!' : 'Workout complete!'}</h2>
-        <p>${esc(P.r.emoji)} ${esc(P.r.name)}</p>
+        <p>${esc(P.r.emoji)} ${esc(P.r.name)} <span class="xp-gain">+${PD.game.xpWorkout(entry)} XP</span></p>
         <div class="pl-stats">
           <div><b>${mmss(entry.duration)}</b><span>total time</span></div>
           <div><b data-count="${entry.kcal}">0</b><span>kcal burned</span></div>

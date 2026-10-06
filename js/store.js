@@ -56,6 +56,17 @@
     journal: {},          // { 'YYYY-MM-DD': { mood: 1-5, note } }
     focus: { work: 25, brk: 5, sessions: [] }, // sessions: [{id, date, start, minutes, label, taskId}]
     fasting: { goal: 16, active: null, history: [] }, // active: {start, goal}; history: [{id, start, end, goal}]
+    board: {
+      columns: [
+        { id: 'todo', name: 'To do', color: 'sky' },
+        { id: 'doing', name: 'In progress', color: 'peach' },
+        { id: 'done', name: 'Done', color: 'mint' },
+      ],
+      cards: [],          // [{id, col, title, notes, due, label, order, created, doneAt}]
+    },
+    notes: { list: [] },  // [{id, title, body, color, pinned, created, updated}]
+    game: { unlocked: {}, level: 0, init: false }, // achievements unlocked {badgeId: date}
+    spotify: { clientId: '', accessToken: '', refreshToken: '', expiresAt: 0, user: '' }, // never synced or exported
     events: [],           // [{id, title, date, time, type: event|task|birthday, notes, done}]
     diet: {
       targets: { kcal: 2000, protein: 120, carbs: 230, fat: 70, water: 8 },
@@ -133,14 +144,14 @@
     Object.keys(DEFAULTS).forEach((k) => { out[k] = get(k); });
     // Never put Strava or Google credentials in a backup file.
     out.strava = { ...out.strava, clientSecret: '', accessToken: '', refreshToken: '', expiresAt: 0 };
-    delete out.google;
+    delete out.google; delete out.spotify;
     return JSON.stringify(out, null, 2);
   }
   function importAll(json) {
     const data = JSON.parse(json);
     if (data.app !== 'personal-dashboard') throw new Error('Not a dashboard backup file');
     Object.keys(DEFAULTS).forEach((k) => {
-      if (!data[k] || k === 'google') return;
+      if (!data[k] || k === 'google' || k === 'spotify') return;
       if (k === 'strava') set(k, { ...get('strava'), ...data[k], clientSecret: get('strava').clientSecret, accessToken: get('strava').accessToken, refreshToken: get('strava').refreshToken, expiresAt: get('strava').expiresAt });
       else set(k, data[k]);
     });
