@@ -1,7 +1,7 @@
 /* Service worker: makes the dashboard installable and usable offline.
    App files are fetched network-first (so updates always arrive together) and fall back to the cache offline.
    Cross-origin APIs (weather, news, Google, Strava…) always go to the network. */
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE = `daily-${VERSION}`;
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',

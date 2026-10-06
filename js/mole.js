@@ -1,4 +1,4 @@
-/* Mo the mole: the dashboard mascot in the bottom-right corner.
+/* Guac the mole: the dashboard mascot in the bottom-right corner.
    Idle breathing, blinking, eyes that follow your pointer, a wave on hover, sleeping at night,
    cheering at celebrations, digging when you switch pages and now and then burrowing out of sight.
    Tap him for navigation & quick actions — and don't tap him five times in a row… */
@@ -108,7 +108,7 @@
     }
     const results = q ? PD.palette.commands(q).slice(0, 7) : [];
     m.innerHTML = `
-      <div class="mo-head"><b>Hi${name ? ` ${esc(name)}` : ''}! I'm Mo 🐾</b><button class="mo-x" data-mo-close aria-label="Close">✕</button></div>
+      <div class="mo-head"><b>Hi${name ? ` ${esc(name)}` : ''}! I'm Guac 🐾</b><button class="mo-x" data-mo-close aria-label="Close">✕</button></div>
       <p class="mo-status small">${esc(status())}</p>
       <form class="mo-search" id="moSearch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input placeholder="Where to? Or type a task, food, routine…" value="${esc(q)}" aria-label="Search or command" autocomplete="off"></form>
@@ -153,13 +153,13 @@
   const dig = () => play('dig', 700);
   const busy = () => wrap.classList.contains('open') || wrap.classList.contains('sleep') || document.hidden || PD.fx.reduce();
 
-  /** Now and then Mo burrows into his molehill and pops right back out. */
+  /** Now and then Guac burrows into his molehill and pops right back out. */
   function burrow() {
     if (!busy()) play('burrow', 2300);
     clearTimeout(burrow.t); burrow.t = setTimeout(burrow, 45e3 + Math.random() * 60e3);
   }
 
-  /* ---------- easter egg: tap Mo 5× quickly and he throws mud at the screen ---------- */
+  /* ---------- easter egg: tap Guac 5× quickly and he throws mud at the screen ---------- */
   const GRUMBLE = ['Hey!', 'Hey! That tickles 😠', 'Stop it…', 'Last warning! 😤'];
   let taps = [];
   function onTap() {
@@ -230,7 +230,7 @@
   }
   function hideSpeech() { const s = $('#moleSay'); if (!s) return; s.classList.remove('show'); setTimeout(() => (s.hidden = true), 250); }
 
-  /** Once a day Mo says hello with the first line of your briefing. */
+  /** Once a day Guac says hello with the first line of your briefing. */
   function greet() {
     const k = `pd.mole.greet.${todayKey()}`;
     try { if (localStorage.getItem(k)) return; localStorage.setItem(k, '1'); } catch { return; }
@@ -248,8 +248,8 @@
     wrap = document.createElement('div');
     wrap.className = 'mole-wrap';
     wrap.innerHTML = `<div class="mole-say" id="moleSay" hidden></div>
-      <div class="mole-menu" id="moleMenu" hidden role="dialog" aria-label="Mo the mole — navigation and quick actions"></div>
-      <button class="mole-btn peek" aria-label="Mo the mole: navigation and quick actions" title="Hi, I'm Mo! Tap me">${svg()}</button>`;
+      <div class="mole-menu" id="moleMenu" hidden role="dialog" aria-label="Guac the mole — navigation and quick actions"></div>
+      <button class="mole-btn peek" aria-label="Guac the mole: navigation and quick actions" title="Hi, I'm Guac! Tap me">${svg()}</button>`;
     document.body.appendChild(wrap);
     $('.mole-btn', wrap).onclick = onTap;
     $('#moleSay', wrap).onclick = () => { hideSpeech(); open(); };
