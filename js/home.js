@@ -130,7 +130,8 @@
 
   /* ---------- news ---------- */
   let newsFilter = 'all';
-  let newsLimit = 12;
+  const NEWS_PAGE = 5;
+  let newsLimit = NEWS_PAGE;
 
   function parseRSS(xml, source) {
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
@@ -189,7 +190,7 @@
   function renderNews(all, feeds, failed) {
     const chips = $('#newsChips');
     chips.innerHTML = ['all', ...feeds.map((f) => f.name)].map((n) => `<button class="chip${newsFilter === n ? ' active' : ''}" data-src="${esc(n)}">${n === 'all' ? 'All' : esc(n)}</button>`).join('');
-    $$('.chip', chips).forEach((b) => (b.onclick = () => { newsFilter = b.dataset.src; newsLimit = 12; renderNews(all, feeds, failed); }));
+    $$('.chip', chips).forEach((b) => (b.onclick = () => { newsFilter = b.dataset.src; newsLimit = NEWS_PAGE; renderNews(all, feeds, failed); }));
 
     const list = all.filter((i) => newsFilter === 'all' || i.source === newsFilter).sort((a, b) => b.date - a.date);
     const el = $('#newsList');
@@ -206,7 +207,7 @@
       ${list.length > newsLimit ? '<button class="btn ghost full" id="newsMore">Show more</button>' : ''}
       ${failed.length ? `<p class="muted small">Not available right now: ${esc(failed.join(', '))}</p>` : ''}`;
     const more = $('#newsMore');
-    if (more) more.onclick = () => { newsLimit += 12; renderNews(all, feeds, failed); };
+    if (more) more.onclick = () => { newsLimit += NEWS_PAGE; renderNews(all, feeds, failed); };
   }
 
   /* ---------- tasks ---------- */

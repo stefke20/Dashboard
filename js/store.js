@@ -21,6 +21,8 @@
         ['squat', 'reps', 15], ['lunge', 'reps', 10, true], ['bridge', 'reps', 15], ['jumpsquat', 'reps', 10], ['wallsit', 'time', 45], ['calf', 'reps', 20]]),
       R('Upper Body Strength', '💪', 'sky', 3, 30, 60, [
         ['pushup', 'reps', 12], ['pike', 'reps', 8], ['dips', 'reps', 12], ['taps', 'time', 30], ['superman', 'reps', 12]]),
+      R('Band Strength', '🎗️', 'pink', 3, 30, 60, [
+        ['b-squat', 'reps', 15], ['b-row', 'reps', 15], ['b-press', 'reps', 12], ['b-goodmorning', 'reps', 12], ['b-pullapart', 'reps', 15], ['b-curl', 'reps', 15]]),
       R('Morning Mobility', '🌅', 'mint', 1, 5, 0, [
         ['catcow', 'time', 40], ['child', 'time', 40], ['cobra', 'time', 30], ['hipflexor', 'time', 30, true], ['toetouch', 'time', 30], ['sidebend', 'time', 30], ['armcircle', 'time', 30]]),
     ];
@@ -62,6 +64,7 @@
       custom: [],         // user-made exercises
       media: {},          // { exerciseId: url } own video / GIF links
       weeklyGoal: 3,
+      migrations: [],
       prefs: { voice: true, sound: true, getReady: 10 },
     },
     strava: {
@@ -112,5 +115,16 @@
     Object.keys(DEFAULTS).forEach((k) => { localStorage.removeItem(PREFIX + k); delete cache[k]; });
   }
 
-  PD.store = { get, save, set, onChange, exportAll, importAll, resetAll, DEFAULTS };
+  /* one-time additions for data created by an older version (never removes anything) */
+  function migrate() {
+    const w = get('workouts');
+    w.migrations = w.migrations || [];
+    if (!w.migrations.includes('band-routine')) {
+      const r = defaultRoutines().find((x) => x.name === 'Band Strength');
+      if (r && !w.routines.some((x) => x.name === r.name)) w.routines.push({ ...r, id: `r-band-${Date.now().toString(36)}` });
+      w.migrations.push('band-routine'); save('workouts');
+    }
+  }
+
+  PD.store = { get, save, set, onChange, exportAll, importAll, resetAll, migrate, DEFAULTS };
 })(window.PD);

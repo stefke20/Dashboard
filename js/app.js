@@ -34,6 +34,7 @@
     renderCurrent: () => { const el = $(`#page-${current}`); PAGES[current].render(); PD.fx.countUp(el); },
   };
 
+  PD.store.migrate();
   PD.settings.applyTheme();
   $('#openSettings').onclick = PD.settings.open;
   $('#modal').addEventListener('click', (e) => {

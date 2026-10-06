@@ -112,12 +112,21 @@
       }
     });
     const db = (ex.props || []).some((p) => p.type === 'db');
+    // resistance bands: a line from a joint (or a fixed anchor point) to a hand, animated with the figure
+    let bands = '';
+    (ex.props || []).filter((p) => p.type === 'band').forEach((pr) => {
+      const fixed = pr.dx != null ? [Math.min(96, fr[0][pr.a][0] + pr.dx), fr[0][pr.a][1] + (pr.dy || 0)] : null;
+      const end = (j, k) => (k === pr.a && fixed ? fixed : j[k]);
+      const seg = (j) => `${f1(end(j, pr.a)[0])},${f1(end(j, pr.a)[1])} ${f1(j[pr.b][0])},${f1(j[pr.b][1])}`;
+      if (fixed) bands += `<rect class="prop" x="${f1(fixed[0])}" y="14" width="3.5" height="${GROUND - 14}" rx="1.5"/><circle class="band-anchor" cx="${f1(fixed[0])}" cy="${f1(fixed[1])}" r="2.2"/>`;
+      bands += `<polyline class="band" points="${seg(fr[0])}">${anim('points', fr.map(seg))}</polyline>`;
+    });
     return `<svg class="fig ${cls}" viewBox="0 0 100 100" aria-hidden="true">
       <ellipse class="fig-shadow" cx="${f1(xs.h[0])}" cy="${GROUND + 1}" rx="24" ry="2.6"/>
       <line class="fig-floor" x1="4" x2="96" y1="${GROUND + 0.5}" y2="${GROUND + 0.5}"/>
       ${props}
       <g class="${front ? 'front' : ''}">
-        ${poly(legK2, 'far')}${poly(['s', 'e2', 'w2'], 'far')}${db ? dot('w2', 'db far-db', 3.2) : ''}
+        ${poly(legK2, 'far')}${poly(['s', 'e2', 'w2'], 'far')}${db ? dot('w2', 'db far-db', 3.2) : ''}${bands}
         ${poly(['h', 's', 'nk'], 'near')}${poly(legK, 'near')}${poly(['s', 'e1', 'w1'], 'near')}
         ${dot('hd', 'head', 5.2)}${db ? dot('w1', 'db', 3.4) : ''}
       </g></svg>`;
@@ -330,10 +339,83 @@
       poses: [P({ t: -16, l1: [8, 8], l2: [-8, -8], a1: [165, 205], a2: [-12, -12] }), P({ t: 16, l1: [8, 8], l2: [-8, -8], a1: [12, 12], a2: [-165, -205] })] },
   ];
 
+  /* ---------- Resistance bands ---------- */
+  const BAND_FEET = [{ type: 'band', a: 'f1', b: 'w1' }];
+  const BAND_BOTH = [{ type: 'band', a: 'f1', b: 'w1' }, { type: 'band', a: 'f2', b: 'w2' }];
+  const BAND_HANDS = [{ type: 'band', a: 'w2', b: 'w1' }];
+  const band = (o) => ({ equip: 'band', ...o });
+  E.push(
+    band({ id: 'b-pullapart', name: 'Band pull-aparts', cat: 'Upper body', muscles: 'Upper back, rear shoulders', mode: 'reps', value: 15, met: 3.5, level: 1, view: 'front', props: BAND_HANDS,
+      steps: ['Hold the band in front of your chest with straight arms, hands shoulder-width apart.', 'Pull the band apart by moving your hands out to the sides.', 'Squeeze your shoulder blades, then return slowly.'],
+      tip: 'Keep your arms straight and shoulders down.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [70, -75], a2: [-70, 75] }), P({ l1: [6, 6], l2: [-6, -6], a1: [90, 90], a2: [-90, -90] })] }),
+    band({ id: 'b-squat', name: 'Banded squats', cat: 'Lower body', muscles: 'Quads, glutes', mode: 'reps', value: 15, met: 5, level: 1, props: BAND_FEET,
+      steps: ['Stand on the band, feet shoulder-width apart, hands holding the band at your shoulders.', 'Squat down, keeping your chest up.', 'Drive up against the band.'],
+      tip: 'The band is hardest at the top — push all the way up.', poses: [P({ a: [15, 165] }), P({ t: 38, l: { to: [9, 21] }, a: [40, 175] })] }),
+    band({ id: 'b-curl', name: 'Band biceps curls', cat: 'Upper body', muscles: 'Biceps', mode: 'reps', value: 15, met: 3.5, level: 1, props: BAND_FEET,
+      steps: ['Stand on the middle of the band, ends in your hands, palms forward.', 'Curl your hands up towards your shoulders.', 'Lower slowly against the band.'],
+      tip: 'Elbows stay pinned to your sides.', poses: [P({ a: [2, 2] }), P({ a: [6, 155] })] }),
+    band({ id: 'b-row', name: 'Seated band rows', cat: 'Upper body', muscles: 'Back, biceps', mode: 'reps', value: 15, met: 3.5, level: 1, anchor: 'h', props: BAND_FEET,
+      steps: ['Sit with legs straight and loop the band around your feet.', 'Pull the band towards your waist, elbows close to your body.', 'Squeeze your shoulder blades, then extend your arms.'],
+      tip: 'Sit tall — don\'t lean back to pull.', poses: [P({ t: -6, l: [90, 90], a: [86, 86], toe: 180 }), P({ t: -10, l: [90, 90], a: { to: [-4, 10], bend: -1 }, toe: 180 })] }),
+    band({ id: 'b-press', name: 'Band overhead press', cat: 'Upper body', muscles: 'Shoulders, triceps', mode: 'reps', value: 12, met: 4, level: 2, view: 'front', props: BAND_BOTH,
+      steps: ['Stand on the band, handles at shoulder height.', 'Press your hands overhead until your arms are straight.', 'Lower back to your shoulders with control.'],
+      tip: 'Brace your core so your back stays neutral.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [92, 178], a2: [-92, -178] }), P({ l1: [6, 6], l2: [-6, -6], a1: [165, 172], a2: [-165, -172] })] }),
+    band({ id: 'b-lateral', name: 'Band lateral raises', cat: 'Upper body', muscles: 'Side shoulders', mode: 'reps', value: 12, met: 3.5, level: 1, view: 'front', props: BAND_BOTH,
+      steps: ['Stand on the band, one end in each hand at your sides.', 'Raise your arms out to the sides to shoulder height.', 'Lower slowly.'],
+      tip: 'Lead with your elbows, slight bend in the arms.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [8, 8], a2: [-8, -8] }), P({ l1: [6, 6], l2: [-6, -6], a1: [86, 92], a2: [-86, -92] })] }),
+    band({ id: 'b-facepull', name: 'Band face pulls', cat: 'Upper body', muscles: 'Rear shoulders, upper back', mode: 'reps', value: 15, met: 3.5, level: 2, anchor: 'f1',
+      props: [{ type: 'band', a: 's', dx: 40, dy: -2, b: 'w1' }],
+      steps: ['Anchor the band at head height (e.g. in a door).', 'Pull the band towards your face, elbows high and wide.', 'Pause, then extend your arms.'],
+      tip: 'Think "show your biceps" at the end of each rep.', poses: [P({ a: [94, 94], l: [4, -2] }), P({ a: { to: [3, -7], bend: -1 }, l: [4, -2] })] }),
+    band({ id: 'b-goodmorning', name: 'Band good mornings', cat: 'Lower body', muscles: 'Hamstrings, glutes, lower back', mode: 'reps', value: 12, met: 4, level: 2, props: BAND_FEET,
+      steps: ['Stand on the band and loop it behind your neck (or hold it at your shoulders).', 'Hinge forward at the hips with a flat back and soft knees.', 'Squeeze your glutes to stand up.'],
+      tip: 'Move from the hips, not the lower back.', poses: [P({ a: [12, 165] }), P({ t: 72, l: [-8, 6], a: [55, 195] })] }),
+    band({ id: 'b-pulldown', name: 'Band pull-downs', cat: 'Upper body', muscles: 'Lats, upper back', mode: 'reps', value: 15, met: 3.5, level: 1, view: 'front', props: BAND_HANDS,
+      steps: ['Hold the band overhead with straight arms, hands wide.', 'Pull the band down behind or in front of your head by bending your elbows out.', 'Return overhead slowly.'],
+      tip: 'Squeeze your lats as if putting your elbows in your back pockets.',
+      poses: [P({ l1: [6, 6], l2: [-6, -6], a1: [158, 165], a2: [-158, -165] }), P({ l1: [6, 6], l2: [-6, -6], a1: [100, 172], a2: [-100, -172] })] }),
+  );
+
+  /* ---------- More bodyweight ---------- */
+  const LUNGE_A = P({ l1: [88, 0], l2: [-28, -96], ...runArms(1) });
+  const LUNGE_B = P({ l1: [-28, -96], l2: [88, 0], ...runArms(0) });
+  const AIR = P({ l1: [35, -15], l2: [-15, -45], a: [12, 12], lift: 8, toe: 40 });
+  E.push(
+    { id: 'skaters', name: 'Skaters', cat: 'Cardio', muscles: 'Glutes, legs, balance', mode: 'time', value: 30, met: 7, level: 2, view: 'front', anchor: 'h', tempo: 0.5,
+      steps: ['Leap sideways onto your right foot, sweeping the left leg behind you.', 'Land softly with a bent knee and swing your arms across.', 'Leap back to the other side.'],
+      tip: 'Stay low and land quietly.',
+      poses: [P({ t: -10, l2: { to: [-8, 23], bend: -1 }, l1: [-28, -42], a1: [-40, -25], a2: [-32, -18] }), P({ t: 10, l1: { to: [8, 23], bend: 1 }, l2: [28, 42], a1: [32, 18], a2: [40, 25] })] },
+    { id: 'revcrunch', name: 'Reverse crunches', cat: 'Core', muscles: 'Lower abs', mode: 'reps', value: 15, met: 3.5, level: 1, anchor: 's',
+      steps: ['Lie on your back, knees bent at 90° above your hips.', 'Curl your hips off the floor, bringing your knees towards your chest.', 'Lower slowly back to the start.'],
+      tip: 'Use your abs, not momentum.', poses: [P({ ...BACK, l: [178, 92], a: [90, 90], toe: 120 }), P({ t: -100, l: [205, 110], a: [90, 90], toe: 120 })] },
+    { id: 'plankdog', name: 'Plank to down dog', cat: 'Full body', muscles: 'Shoulders, hamstrings, core', mode: 'reps', value: 10, met: 4, level: 1, anchor: 'w1', tempo: 1.2,
+      steps: ['Start in a high plank.', 'Push your hips up and back into an inverted V.', 'Lower back to plank with control.'],
+      tip: 'Press your heels towards the floor in down dog.', poses: [PLANK_HI, P({ t: 140, l: [-38, -38], a: [28, 28], toe: 20 })] },
+    { id: 'bearplank', name: 'Bear plank', cat: 'Core', muscles: 'Core, shoulders, quads', mode: 'time', value: 30, met: 4, level: 2, anchor: 'w1',
+      steps: ['Start on hands and knees, toes tucked.', 'Lift your knees a few centimetres off the floor.', 'Hold with a flat back.'],
+      tip: 'Knees stay under your hips the whole time.', poses: [P({ t: 74, l: [6, -72], a: [0, 0], toe: -40 })] },
+    { id: 'wallpush', name: 'Wall push-ups', cat: 'Upper body', muscles: 'Chest, shoulders, triceps', mode: 'reps', value: 15, met: 3, level: 1, equip: 'wall', anchor: 'f1',
+      props: [{ type: 'wall', at: 'w1', dx: 5 }],
+      steps: ['Stand an arm\'s length from a wall, hands on it at shoulder height.', 'Bend your elbows to bring your chest towards the wall.', 'Push back to straight arms.'],
+      tip: 'Step further back to make it harder.', poses: [P({ t: 20, l: [-20, -20], a: [100, 100] }), P({ t: 26, l: [-26, -26], a: { to: [17.8, -6.7], bend: -1 } })] },
+    { id: 'jumplunge', name: 'Jumping lunges', cat: 'Cardio', muscles: 'Quads, glutes, cardio', mode: 'time', value: 30, met: 8.5, level: 3, anchor: 'h', tempo: 0.45,
+      steps: ['Start in a lunge.', 'Jump up and switch legs in the air.', 'Land softly in a lunge on the other side.'],
+      tip: 'Do alternating step-back lunges for a low-impact version.', poses: [LUNGE_A, AIR, LUNGE_B, AIR] },
+    { id: 'tuckjump', name: 'Tuck jumps', cat: 'Cardio', muscles: 'Legs, core, cardio', mode: 'reps', value: 10, met: 9, level: 3, anchor: 'h', tempo: 0.55,
+      steps: ['Stand with feet hip-width apart.', 'Jump explosively and pull your knees towards your chest.', 'Land softly and go straight into the next jump.'],
+      tip: 'Land on the balls of your feet with bent knees.', poses: [P({ t: 30, l: { to: [6, 25] }, a: [-30, -30] }), P({ t: 8, l: [118, -12], a: [60, 60], lift: 16, toe: 40 })] },
+    { id: 'vup', name: 'V-ups', cat: 'Core', muscles: 'Abs, hip flexors', mode: 'reps', value: 10, met: 5, level: 3, anchor: 'h',
+      steps: ['Lie flat with arms overhead and legs straight.', 'Lift your legs and upper body at the same time to form a V.', 'Reach for your toes, then lower with control.'],
+      tip: 'Bend your knees slightly to make it easier.', poses: [P({ ...BACK, l: [95, 95], a: [-96, -96], toe: 100 }), P({ t: -42, l: [140, 140], a: [125, 125], toe: 150 })] },
+  );
+
   E.forEach((e) => { e.equip = e.equip || 'none'; });
 
   const CATS = ['Lower body', 'Upper body', 'Core', 'Cardio', 'Full body', 'Mobility'];
-  const EQUIP = { none: 'No equipment', chair: 'Chair', wall: 'Wall', dumbbells: 'Dumbbells' };
+  const EQUIP = { none: 'No equipment', band: 'Resistance band', chair: 'Chair', wall: 'Wall', dumbbells: 'Dumbbells' };
 
   PD.EXERCISES = E;
   PD.exercises = {
