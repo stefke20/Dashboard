@@ -31,7 +31,6 @@ Opening `index.html` directly (`file://`) works too, but Strava login needs http
 - **Habits & mood**: daily check-ins with streaks (water and "workout or 10k steps" tick themselves), a mood picker with a one-line note, and 15-week heatmaps plus a mood trend in Health.
 - **Focus timer** (Pomodoro) linked to your tasks, with a floating timer pill on other tabs and the time in the browser tab.
 - **Intermittent fasting** timer in Diet (12:12 to 24 h), with recent fasts.
-- **Trains**: live NMBS/SNCB departures (delays, platforms, cancellations) from your station and the next connections to your favourite destination, via [iRail](https://docs.irail.be).
 - **Daily dose**: quote of the day (incl. Dutch proverbs) and "On this day" from Wikipedia.
 - **Your week** (📊 on the header): a story-style weekly review across workouts, food, body, habits, mood and focus — shareable.
 - **Quick actions**: press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> or <kbd>/</kbd> (or the 🔍 button) to jump anywhere, start a routine, log water or weight, check a habit, start focus/fasting — or just type “call mum” to add it as a task. Press <kbd>?</kbd> for all shortcuts.
@@ -102,7 +101,7 @@ Everything lives in `localStorage` in the browser you use. Use **Settings → Do
 ## Data sources
 
 - Weather and place search: [Open-Meteo](https://open-meteo.com) (no API key needed)
-- Trains: [iRail](https://api.irail.be) (NMBS/SNCB open data) · "On this day": [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/)
+- "On this day": [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/)
 - Air quality & pollen: [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) (Copernicus CAMS)
 - Food database: [Open Food Facts](https://world.openfoodfacts.org) · barcode reading: the browser's BarcodeDetector or [ZXing](https://github.com/zxing-js/library)
 - News: RSS fetched through public CORS proxies (rss2json, allorigins, corsproxy.io, tried in that order), with a 20-minute cache

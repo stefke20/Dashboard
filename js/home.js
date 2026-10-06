@@ -368,10 +368,9 @@
     news: { label: 'News', col: 'L', html: `<div class="card news-card" id="newsCard"><div class="card-head"><h2>News</h2>
       <button class="icon-btn sm" id="newsRefresh" title="Refresh" aria-label="Refresh news"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
       <div class="chips" id="newsChips"></div><div id="newsList"></div></div>` },
-    trains: { label: 'Trains (NMBS)', col: 'R', html: '<div class="card" id="trains"><div class="card-head"><h2>🚆 Trains</h2></div><div class="skeleton"></div></div>' },
     dose: { label: 'Quote & on this day', col: 'L', html: '<div class="card" id="dose"></div>' },
   };
-  const DEFAULT_ORDER = ['hero', 'tiles', 'weather', 'air', 'agenda', 'habits', 'tasks', 'focus', 'news', 'trains', 'dose'];
+  const DEFAULT_ORDER = ['hero', 'tiles', 'weather', 'air', 'agenda', 'habits', 'tasks', 'focus', 'news', 'dose'];
 
   function layout() {
     const h = store.get('settings').home || {};
@@ -428,7 +427,7 @@
     page.innerHTML = `<div class="home-grid"><div class="home-col">${col('L')}</div><div class="home-col">${col('R')}</div></div>`;
     renderHero(); renderTiles(); renderTasks(); renderAgenda();
     PD.habits.card($('#habitsCard')); PD.focus.card($('#focusCard'));
-    loadWeather(); loadNews(); PD.air.load(); PD.trains.load(); PD.daily.dose();
+    loadWeather(); loadNews(); PD.air.load(); PD.daily.dose();
     const nr = $('#newsRefresh');
     if (nr) nr.onclick = () => {
       store.get('settings').feeds.forEach((f) => localStorage.removeItem(`pd.cache.news.${f.id}`));
@@ -439,7 +438,7 @@
 
   /** Pull-to-refresh: reload all live cards. */
   function refresh() {
-    Object.keys(localStorage).filter((k) => /^pd\.cache\.(news|wx|air|trains)\./.test(k)).forEach((k) => localStorage.removeItem(k));
+    Object.keys(localStorage).filter((k) => /^pd\.cache\.(news|wx|air)\./.test(k)).forEach((k) => localStorage.removeItem(k));
     render(); PD.toast('Refreshed');
   }
 

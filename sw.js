@@ -1,19 +1,20 @@
 /* Service worker: makes the dashboard installable and usable offline.
-   App files: network-first for the page, stale-while-revalidate for scripts/styles/icons.
+   App files are fetched network-first (so updates always arrive together) and fall back to the cache offline.
    Cross-origin APIs (weather, news, Google, Strava…) always go to the network. */
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `daily-${VERSION}`;
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/util.js', './js/store.js', './js/fx.js', './js/charts.js', './js/exercises.js', './js/foods.js',
   './js/home.js', './js/health.js', './js/calendar.js', './js/diet.js', './js/workout.js', './js/programs.js',
   './js/google.js', './js/sync.js', './js/air.js', './js/scanner.js', './js/habits.js', './js/focus.js', './js/daily.js',
-  './js/trains.js', './js/fasting.js', './js/review.js', './js/reminders.js', './js/palette.js', './js/polish.js', './js/settings.js', './js/app.js',
+  './js/fasting.js', './js/review.js', './js/reminders.js', './js/palette.js', './js/polish.js', './js/settings.js', './js/app.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the browser's HTTP cache, so a new version never stores old files
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -37,8 +38,12 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   e.respondWith(caches.open(CACHE).then(async (c) => {
-    const hit = await c.match(req, { ignoreSearch: true });
-    const net = fetch(req).then((res) => { if (res.ok || res.type === 'opaque') c.put(req, res.clone()); return res; }).catch(() => hit);
-    return hit || net;
+    try {
+      const res = await fetch(req, { cache: 'no-cache' });
+      if (res.ok || res.type === 'opaque') c.put(req, res.clone());
+      return res;
+    } catch {
+      return (await c.match(req, { ignoreSearch: true })) || Response.error();
+    }
   }));
 });

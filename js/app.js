@@ -71,6 +71,13 @@
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { /* offline support unavailable */ }));
+    // when an update takes over, reload once so all files come from the same version
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloaded || document.querySelector('#player, .story, #modal[open]')) return;
+      reloaded = true; location.reload();
+    });
   }
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; });
   window.addEventListener('appinstalled', () => { deferred = null; PD.toast('Installed — find Daily on your home screen 🎉'); });

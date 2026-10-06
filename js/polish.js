@@ -30,20 +30,31 @@
   }, { passive: true });
 
   /* ---------- pull to refresh (Home) ---------- */
-  const ptr = document.createElement('div'); ptr.className = 'ptr'; ptr.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
-  document.body.appendChild(ptr);
+  // the indicator is created on the first pull and is sized/hidden inline, so it can never show up unstyled
+  let ptr = null;
+  const getPtr = () => {
+    if (ptr) return ptr;
+    ptr = document.createElement('div'); ptr.className = 'ptr'; ptr.setAttribute('aria-hidden', 'true');
+    ptr.style.cssText = 'position:fixed;top:70px;left:50%;width:40px;height:40px;opacity:0;pointer-events:none;z-index:30;transform:translate(-50%,-50px)';
+    ptr.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+    document.body.appendChild(ptr);
+    return ptr;
+  };
   let py = null; let pull = 0;
   document.addEventListener('touchstart', (e) => { py = (window.scrollY <= 0 && PD.app.current() === 'home' && !blocking()) ? e.touches[0].clientY : null; pull = 0; }, { passive: true });
   document.addEventListener('touchmove', (e) => {
     if (py == null) return;
     pull = Math.max(0, Math.min(140, e.touches[0].clientY - py));
-    ptr.style.transform = `translate(-50%, ${pull * 0.6 - 50}px) rotate(${pull * 3}deg)`;
-    ptr.classList.toggle('ready', pull > 90); ptr.style.opacity = String(Math.min(pull / 90, 1));
+    if (pull < 8 && !ptr) return;
+    const el = getPtr();
+    el.style.transform = `translate(-50%, ${pull * 0.6 - 50}px) rotate(${pull * 3}deg)`;
+    el.classList.toggle('ready', pull > 90); el.style.opacity = String(Math.min(pull / 90, 1));
   }, { passive: true });
   document.addEventListener('touchend', () => {
     if (py == null) return;
+    if (!ptr) { py = null; return; }
     if (pull > 90) { ptr.classList.add('spin'); PD.haptic(15); PD.home.refresh(); setTimeout(() => ptr.classList.remove('spin'), 900); }
-    ptr.style.transform = ''; ptr.style.opacity = '0'; ptr.classList.remove('ready'); py = null;
+    ptr.style.transform = 'translate(-50%, -50px)'; ptr.style.opacity = '0'; ptr.classList.remove('ready'); py = null;
   }, { passive: true });
 
   /* ---------- keyboard shortcuts ---------- */
