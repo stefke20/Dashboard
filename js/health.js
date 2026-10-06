@@ -272,7 +272,7 @@
   function importSamsung(name, text) {
     const rows = PD.parseCSV(text);
     if (rows.length < 2) return 0;
-    let hdrIdx = rows[0].length <= 3 && rows.length > 2 ? 1 : 0;
+    const hdrIdx = rows[0].length <= 3 && rows.length > 2 ? 1 : 0;
     const header = rows[hdrIdx].map((c) => c.trim().split('.').pop());
     const col = (...names) => names.map((n) => header.indexOf(n)).find((i) => i >= 0) ?? -1;
     const data = rows.slice(hdrIdx + 1);
@@ -350,7 +350,7 @@
       </div>
       <div class="two-col">
         <div><h3 class="sub">Workout minutes · last 12 weeks</h3><div class="chart-box" id="wkChart"></div></div>
-        <div><h3 class="sub">Recent sessions</h3>
+        <div><h3 class="sub row gap">Recent sessions <span class="spacer"></span><button class="link small" id="wkAll">all, edit &amp; add ›</button></h3>
           ${log.length ? `<ul class="sessions">${log.slice(0, 6).map((l) => `
             <li><span class="act-icon" aria-hidden="true">${esc(l.emoji || '🏋️')}</span>
               <span class="act-main"><b>${esc(l.name)}${l.partial ? ' <span class="pill small peach">partial</span>' : ''}</b>
@@ -371,10 +371,8 @@
       label: fmt.dayMonth(w.week), value: Math.round(w.min), highlight: i === 11,
       tip: `<b>Week of ${esc(fmt.dayMonth(w.week))}</b><br>${w.count} workout${w.count === 1 ? '' : 's'} · ${fmt.num(w.min)} min<br>~${fmt.num(w.kcal)} kcal`,
     })), { color: 'var(--accent-violet-ink)', label: 'Workout minutes per week', height: 190 });
-    $$('[data-wdel]').forEach((b) => (b.onclick = () => {
-      if (!confirm('Delete this workout session?')) return;
-      const w = store.get('workouts'); w.log = w.log.filter((l) => l.id !== b.dataset.wdel); store.save('workouts'); render();
-    }));
+    $$('[data-wdel]').forEach((b) => (b.onclick = () => PD.workout.removeSession(b.dataset.wdel, render)));
+    const all = $('#wkAll'); if (all) all.onclick = () => PD.workout.history();
   }
 
   /* ---------- page ---------- */

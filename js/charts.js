@@ -1,7 +1,6 @@
 /* Small dependency-free SVG charts: single-series bars & line, with hover tooltips. */
 (function (PD) {
   const { esc } = PD;
-  const NS = 'http://www.w3.org/2000/svg';
 
   /** Round axis: a 1/2/2.5/5 × 10^n step and a max that is a whole number of steps. */
   function niceScale(v, divisions = 4) {
@@ -14,15 +13,17 @@
     return { max, ticks: Array.from({ length: Math.round(max / step) + 1 }, (_, i) => i * step) };
   }
 
+  // tooltip: only re-measure when its text changes, and move it with a transform (no layout per mouse move)
+  let tipHtml = ''; let tipSize = null;
   const tip = {
     show(html, evt) {
       const el = PD.$('#tooltip');
-      el.innerHTML = html; el.hidden = false;
-      const pad = 12; const r = el.getBoundingClientRect();
-      let x = evt.clientX + pad; let y = evt.clientY - r.height - pad;
-      if (x + r.width > window.innerWidth - 8) x = evt.clientX - r.width - pad;
+      if (html !== tipHtml || el.hidden) { el.innerHTML = html; el.hidden = false; tipHtml = html; const r = el.getBoundingClientRect(); tipSize = [r.width, r.height]; }
+      const [w, h] = tipSize; const pad = 12;
+      let x = evt.clientX + pad; let y = evt.clientY - h - pad;
+      if (x + w > window.innerWidth - 8) x = evt.clientX - w - pad;
       if (y < 8) y = evt.clientY + pad;
-      el.style.left = `${x}px`; el.style.top = `${y}px`;
+      el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
     },
     hide() { PD.$('#tooltip').hidden = true; },
   };

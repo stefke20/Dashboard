@@ -57,9 +57,9 @@
   }
 
   function weeklyMinutes(weeks = 12) {
-    const start = PD.startOfWeek(new Date());
+    const first = PD.startOfWeek(new Date());
     return Array.from({ length: weeks }, (_, i) => {
-      const w = PD.addDays(start, -7 * (weeks - 1 - i));
+      const w = PD.addDays(first, -7 * (weeks - 1 - i));
       const from = PD.keyOf(w); const to = PD.keyOf(PD.addDays(w, 6));
       const ls = W().log.filter((l) => l.date >= from && l.date <= to);
       return { week: w, min: ls.reduce((s, l) => s + l.duration, 0) / 60, count: ls.length, kcal: ls.reduce((s, l) => s + l.kcal, 0) };
@@ -85,14 +85,14 @@
           ${PD.ring(st.weekCount, st.goal, { size: 128, stroke: 12, color: 'var(--accent-peach-ink)', label: `${st.weekCount}/${st.goal}`, sub: 'this week' })}
           <div>
             <h2>${st.weekCount >= st.goal ? 'Weekly goal reached 🎉' : st.weekCount ? `${st.goal - st.weekCount} more to hit your goal` : "Let's get moving"}</h2>
-            <p class="muted small">Goal: ${st.goal} workouts per week · <button class="link" id="wkGoal">change</button></p>
+            <p class="muted small">Goal: ${st.goal} workouts per week · <button class="link" id="wkGoal">change</button> · <button class="link" id="wkHistory">history &amp; edit</button></p>
           </div>
         </div>
         <div class="stat-row">
           <div class="stat"><span>Minutes this week</span><b data-count="${Math.round(st.weekMin)}">0</b></div>
           <div class="stat"><span>Calories burned</span><b data-count="${Math.round(st.weekKcal)}">0</b></div>
           <div class="stat"><span>Goal streak</span><b>${st.streak} wk${st.streak === 1 ? '' : 's'}</b></div>
-          <div class="stat"><span>All-time sessions</span><b data-count="${st.total}">0</b></div>
+          <button class="stat stat-btn" id="wkHistory2" title="See, edit or delete your workouts"><span>All-time sessions</span><b data-count="${st.total}">0</b><small class="muted">history ›</small></button>
         </div>
       </div>
 
@@ -129,6 +129,8 @@
     $('#progRandom').onclick = () => PD.randomizer.programme();
     $('#wkPrefs').onclick = prefsModal;
     $('#wkGoal').onclick = prefsModal;
+    $('#wkHistory').onclick = () => history();
+    $('#wkHistory2').onclick = () => history();
     $('#exCustom').onclick = () => customExerciseModal();
     $$('#libCats .chip').forEach((c) => (c.onclick = () => { libCat = c.dataset.c; $$('#libCats .chip').forEach((x) => x.classList.toggle('active', x === c)); renderLibrary(); }));
     $('#libEquip').onchange = (e) => { libEquip = e.target.value; renderLibrary(); };
@@ -192,7 +194,7 @@
     const list = filtered();
     el.innerHTML = list.length ? list.map((e) => exCard(e)).join('') : '<p class="empty">No exercises match. Try another filter, or create a custom exercise.</p>';
     $$('.ex-card', el).forEach((c) => (c.onclick = () => detail(c.dataset.ex)));
-    if (PD.fx.reduce()) $$('svg.fig', el).forEach((s) => s.pauseAnimations?.());
+    if (PD.fx.reduce()) $$('svg.fig', el).forEach((s) => s.pauseAnimations?.()); else X().liven(el);
   }
 
   /* ---------------- exercise detail ---------------- */
@@ -211,7 +213,8 @@
       <div class="ex-detail">
         <div class="ex-detail-fig">${X().figure(e, { cls: 'big' })}</div>
         <div class="ex-tags"><span class="pill ${catColor(e.cat)}">${esc(e.cat)}</span>${e.muscles ? `<span class="pill">${esc(e.muscles)}</span>` : ''}
-          <span class="pill">${esc(X().EQUIP[e.equip || 'none'] || e.equip)}</span><span class="pill">${'●'.repeat(e.level || 1)}${'○'.repeat(3 - (e.level || 1))} ${['Easy', 'Medium', 'Hard'][(e.level || 1) - 1]}</span></div>
+          <span class="pill">${esc(X().EQUIP[e.equip || 'none'] || e.equip)}</span><span class="pill">${'●'.repeat(e.level || 1)}${'○'.repeat(3 - (e.level || 1))} ${['Easy', 'Medium', 'Hard'][(e.level || 1) - 1]}</span>
+          <span class="pill" title="${esc(`MET ${e.met || 3.8}${e.metRef ? ` · ${e.metRef}` : ''} · for ${bodyWeight()} kg`)}">🔥 ~${fmt.num(kcalFor(e.met || 3.8, 60), 1)} kcal/min</span></div>
         ${e.steps?.length ? `<h3 class="sub">How to</h3><ol class="steps">${e.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
         ${e.tip ? `<p class="tip">💡 ${esc(e.tip)}</p>` : ''}
         ${embedFor(media)}
@@ -272,7 +275,7 @@
         <div class="row gap wrap">
           <label class="grow">Default<select name="mode"><option value="time" ${e.mode !== 'reps' ? 'selected' : ''}>Time (seconds)</option><option value="reps" ${e.mode === 'reps' ? 'selected' : ''}>Repetitions</option></select></label>
           <label class="grow">Amount<input name="value" type="number" min="1" max="600" value="${e.value || 30}"></label>
-          <label class="grow">Intensity<select name="met">${[[2.5, 'Light (stretching)'], [4, 'Moderate'], [6, 'Hard'], [8.5, 'Very hard']].map(([v, l]) => `<option value="${v}" ${Number(e.met) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="grow">Intensity<select name="met">${[[2.3, 'Stretching / mobility'], [2.8, 'Light (planks, crunches)'], [3.8, 'Moderate (push-ups, lunges)'], [5, 'Hard (squats, circuits)'], [7.5, 'Very hard (burpees, jumping)']].map(([v, l]) => `<option value="${v}" ${Number(e.met) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
         </div>
         <label>Muscles<input name="muscles" maxlength="80" value="${esc(e.muscles || '')}" placeholder="e.g. Glutes, core"></label>
         <label>Picture or GIF URL<input name="image" type="url" value="${esc(e.image || '')}" placeholder="https://…/exercise.gif"></label>
@@ -404,8 +407,9 @@
       $('[data-cancel]', body).onclick = close;
       const del = $('#reDel', body);
       if (del) del.onclick = () => {
-        if (!confirm(`Delete "${draft.name}"?`)) return;
-        W().routines = W().routines.filter((r) => r.id !== draft.id); store.save('workouts'); close(); renderRoutines();
+        close();
+        PD.undoable(['workouts'], `Deleted routine “${draft.name}”`, () => { W().routines = W().routines.filter((r) => r.id !== draft.id); store.save('workouts'); });
+        renderRoutines();
       };
       form.onsubmit = (ev) => {
         ev.preventDefault(); sync();
@@ -430,6 +434,7 @@
           <div class="ex-grid compact">${list.map((e) => exCard(e, `aria-pressed="${pickSel.has(e.id)}"`)).join('')}</div>
           <div class="picker-foot"><button class="btn full" id="pickAdd" ${pickSel.size ? '' : 'disabled'}>Add ${pickSel.size || ''} exercise${pickSel.size === 1 ? '' : 's'}</button></div>
         </div>`;
+      X().liven($('.ex-grid', body));
       $('#pickBack', body).onclick = () => { picking = false; view(body); };
       const qi = $('#pickQ', body);
       qi.oninput = PD.debounce(() => { pickQ = qi.value; pickerView(body); const n = $('#pickQ', body); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 200);
@@ -471,6 +476,98 @@
         store.save('events'); close(); PD.toast(`Planned for ${PD.relDay(f.date.value).toLowerCase()}`);
       };
     });
+  }
+
+
+  /* ---------- workout history: edit, delete, add a forgotten one ---------- */
+  // 2024 Compendium: stretching/yoga 2.3 (02101/02150), calisthenics moderate 3.8 (02022), circuit training 5.0, vigorous calisthenics/HIIT 7.5 (02020)
+  const INTENSITY = [[2.3, 'Light (yoga, stretching)'], [3.8, 'Moderate (bodyweight strength)'], [5, 'Hard (circuits, weights)'], [7.5, 'Very hard (HIIT, burpees, jumping)']];
+
+  /** Delete a logged session — also takes it off your programme progress. Can be undone. */
+  function removeSession(id, after) {
+    PD.undoable(['workouts'], 'Workout deleted', () => {
+      const w = W(); w.log = w.log.filter((l) => l.id !== id);
+      const e = w.enrolled;
+      if (e?.logs) Object.entries(e.logs).forEach(([s, lid]) => { if (lid === id) { delete e.logs[s]; e.done = e.done.filter((x) => x !== Number(s)); } });
+      store.save('workouts');
+    });
+    after?.();
+  }
+
+  function sessionForm(entry, done) {
+    const isNew = !entry;
+    const e = entry || { name: '', emoji: '🏋️', date: todayKey(), start: new Date().toISOString(), duration: 30 * 60, kcal: 0, rating: null };
+    const hhmm = new Date(e.start).toTimeString().slice(0, 5);
+    PD.modal(isNew ? 'Log a workout' : 'Edit workout', `
+      <form class="form" id="sessForm">
+        <label>Name<input name="name" required maxlength="50" list="sessRoutines" value="${esc(e.name)}" placeholder="e.g. Morning HIIT"><datalist id="sessRoutines">${W().routines.map((r) => `<option value="${esc(r.name)}">`).join('')}</datalist></label>
+        <div class="row gap wrap">
+          <label class="grow">Date<input type="date" name="date" required value="${esc(e.date)}" max="${todayKey()}"></label>
+          <label class="grow">Start time<input type="time" name="time" value="${hhmm}"></label>
+          <label class="grow">Minutes<input type="number" name="min" min="1" max="600" required value="${Math.max(1, Math.round(e.duration / 60))}"></label>
+        </div>
+        <div class="row gap wrap">
+          <label class="grow">Intensity<select name="met">${INTENSITY.map(([v, l]) => `<option value="${v}" ${v === 3.8 ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="grow">Calories<input type="number" name="kcal" min="0" max="5000" value="${Math.round(e.kcal) || ''}" placeholder="auto"></label>
+        </div>
+        <p class="muted small" id="sessHint"></p>
+        <div class="row gap end">
+          ${isNew ? '' : '<button type="button" class="btn ghost danger" id="sessDel">Delete</button><span class="spacer"></span>'}
+          <button type="button" class="btn ghost" data-close>Cancel</button><button class="btn">${isNew ? 'Add workout' : 'Save'}</button>
+        </div>
+      </form>`, (body, close) => {
+      const f = $('#sessForm', body);
+      let kcalTouched = !isNew;
+      const auto = () => Math.round(kcalFor(Number(f.met.value), Number(f.min.value) * 60 * 0.75) + kcalFor(2.5, Number(f.min.value) * 60 * 0.25));
+      const hint = () => { $('#sessHint', body).textContent = `Estimate for your weight (${bodyWeight()} kg): ~${auto()} kcal (¾ of the time working, ¼ resting).`; if (!kcalTouched) f.kcal.value = auto(); };
+      f.kcal.oninput = () => { kcalTouched = true; };
+      f.min.oninput = hint; f.met.onchange = hint; hint();
+      const del = $('#sessDel', body);
+      if (del) del.onclick = () => { close(); removeSession(e.id, done); };
+      f.onsubmit = (ev) => {
+        ev.preventDefault();
+        const min = Math.min(600, Math.max(1, Number(f.min.value) || 1));
+        const start = new Date(`${f.date.value}T${f.time.value || '12:00'}`);
+        const fields = { name: f.name.value.trim(), date: f.date.value, start: start.toISOString(), duration: min * 60, kcal: Math.round(Number(f.kcal.value) || auto()) };
+        const w = W();
+        if (isNew) {
+          const r = w.routines.find((x) => x.name === fields.name);
+          w.log.push({ id: PD.uid(), emoji: r?.emoji || '🏋️', ...fields, active: Math.round(min * 60 * 0.75), exercises: 0, total: 0, rating: null, manual: true });
+        } else {
+          const cur = w.log.find((l) => l.id === e.id);
+          // keep the work/rest share when the duration changes
+          if (cur) Object.assign(cur, fields, { active: Math.round((cur.active || cur.duration) * (fields.duration / Math.max(cur.duration, 1))) });
+        }
+        store.save('workouts'); close(); PD.toast(isNew ? 'Workout added 💪' : 'Workout updated'); done?.();
+      };
+    });
+  }
+
+  function history() {
+    const draw = (body) => {
+      const log = W().log.slice().sort((a, b) => b.start.localeCompare(a.start));
+      const months = {};
+      log.forEach((l) => { const k = l.date.slice(0, 7); (months[k] = months[k] || []).push(l); });
+      body.innerHTML = `
+        <div class="row gap"><p class="muted small grow">Tap a workout to change it, or ✕ to delete it (you can undo). Forgot to log one?</p><button class="btn sm" id="histAdd">+ Log a workout</button></div>
+        ${log.length ? Object.entries(months).map(([m, ls]) => `
+          <h3 class="sub">${esc(fmt.date(PD.parseKey(`${m}-01`), { month: 'long', year: 'numeric' }))} <span class="muted small">· ${ls.length} workout${ls.length === 1 ? '' : 's'} · ${fmt.num(ls.reduce((a, l) => a + l.kcal, 0))} kcal</span></h3>
+          <ul class="sessions">${ls.map((l) => `
+            <li class="hist-row" data-edit="${l.id}" tabindex="0"><span class="act-icon" aria-hidden="true">${esc(l.emoji || '🏋️')}</span>
+              <span class="act-main"><b>${esc(l.name)}${l.partial ? ' <span class="pill small peach">partial</span>' : ''}${l.manual ? ' <span class="pill small">added</span>' : ''}</b>
+                <span class="muted small">${esc(fmt.short(PD.parseKey(l.date)))} · ${fmt.time(new Date(l.start))} · ${fmt.duration(l.duration)}${l.total ? ` · ${l.exercises}/${l.total} exercises` : ''}</span></span>
+              <span class="act-stats"><b>${fmt.num(l.kcal)}</b> kcal</span>
+              <button class="icon-btn sm ghost" data-del="${l.id}" aria-label="Delete ${esc(l.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`).join('')}</ul>`).join('')
+        : '<p class="empty">No workouts yet.</p>'}`;
+      const reopen = () => history();
+      $('#histAdd', body).onclick = () => sessionForm(null, reopen);
+      $$('[data-del]', body).forEach((b) => (b.onclick = (ev) => { ev.stopPropagation(); removeSession(b.dataset.del, () => draw(body)); }));
+      $$('[data-edit]', body).forEach((row) => {
+        const open = () => sessionForm(W().log.find((l) => l.id === row.dataset.edit), reopen);
+        row.onclick = open; row.onkeydown = (ev) => { if (ev.key === 'Enter') open(); };
+      });
+    };
+    PD.modal('📜 Workout history', '', draw, 'wide');
   }
 
   function prefsModal() {
@@ -540,7 +637,6 @@
     const ws = workSteps(); const wi = ws.indexOf(s);
     const nextWork = P.steps.slice(P.i + 1).find((x) => x.type === 'work');
     const nextItem = s.next || nextWork?.it;
-    const e = s.ex || (s.next ? exOf(s.next.ex) : null);
     const phase = s.type === 'work' ? 'work' : s.type === 'ready' ? 'ready' : 'rest';
     const label = { work: 'Work', ready: 'Get ready', rest: s.roundBreak ? 'Round break' : 'Rest', switch: 'Switch sides' }[s.type];
     const doneSoFar = P.steps.slice(0, P.i).filter((x) => x.type === 'work').length;
@@ -598,7 +694,8 @@
     const s = P.steps[P.i];
     if (P.running) {
       P.elapsed += dt; P.total += dt;
-      if (s.type === 'work') { P.workSec += dt; P.kcal += kcalFor(s.ex.met || 4, dt); } else P.kcal += kcalFor(1.5, dt);
+      // work at the exercise's MET; between sets your body is still recovering (≈2.5 MET, 2.0 for long rests); 'get ready' ≈ standing
+      if (s.type === 'work') { P.workSec += dt; P.kcal += kcalFor(s.ex.met || 3.8, dt); } else P.kcal += kcalFor(s.type === 'ready' ? 1.5 : s.dur >= 60 ? 2 : 2.5, dt);
     }
     const t = $('#plTime');
     if (s.dur != null) {
@@ -706,5 +803,5 @@
     if (PD.app.current() === 'workout') render(); else PD.app.renderCurrent();
   }
 
-  PD.workout = { render, start, detail, stats, weeklyMinutes, estimate, catColor, exOf, fmtVal, routineFigs: (items) => items.slice(0, 5).map((it) => `<span title="${esc(exOf(it.ex).name)}">${X().figure(exOf(it.ex), { still: true })}</span>`).join('') };
+  PD.workout = { render, start, detail, stats, weeklyMinutes, estimate, catColor, exOf, fmtVal, history, removeSession, logWorkout: () => sessionForm(null, () => PD.app.renderCurrent()), routineFigs: (items) => items.slice(0, 5).map((it) => `<span title="${esc(exOf(it.ex).name)}">${X().figure(exOf(it.ex), { still: true })}</span>`).join('') };
 })(window.PD);

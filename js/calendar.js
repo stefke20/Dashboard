@@ -274,9 +274,9 @@
       if (gl) gl.onclick = () => window.open(PD.gcalLink({ title: ev.title, date: ev.date, time: ev.time, details: ev.notes, allDay: ev.type === 'birthday' || !ev.time, yearly: ev.type === 'birthday' || ev.repeat === 'yearly', weekly: ev.repeat === 'weekly' }), '_blank', 'noopener');
       const del = $('#evDelete', body);
       if (del) del.onclick = () => {
-        if (!confirm('Delete this item?')) return;
-        store.set('events', store.get('events').filter((x) => x.id !== ev.id));
-        close(); render();
+        close();
+        PD.undoable(['events'], `Deleted “${ev.title}”`, () => store.set('events', store.get('events').filter((x) => x.id !== ev.id)));
+        render();
       };
     });
   }

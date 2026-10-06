@@ -39,6 +39,12 @@ Opening `index.html` directly (`file://`) works too, but Strava login needs http
 - **Dark after sunset** theme, haptic feedback, swipe between tabs (and months in the calendar), pull down on Home to refresh, smooth page transitions and an offline indicator.
 - **Integrations**: a 🎵 button in the workout player opens your Spotify/YouTube Music/Apple Music playlist; planned workouts and events can be copied to Google Calendar in one tap.
 
+## Calories and corrections
+
+**How calories are estimated.** Each exercise has a MET value (how hard it is compared with sitting still) from the **2024 Adult Compendium of Physical Activities** (Herrmann et al., *Journal of Sport and Health Science* 2024) — e.g. push-ups 3.8 (code 02022), planks and crunches 2.8 (02024), burpees and jump squats about 8 (02020, vigorous calisthenics), squats with weight 5.0 (02052), stretching 2.3 — or from measured studies where the Compendium has no exact entry (lunges, resistance bands). During the work interval: kcal = MET × 3.5 × your weight (kg) ÷ 200 per minute; between sets your body is still recovering, so rests count at 2.5 MET (2.0 for rests of a minute or more). The exercise details show your kcal per minute and the source. Your latest weight in Health is used.
+
+**Fixing mistakes.** *My workout → history & edit* (or *Health → Recent sessions → all, edit & add*) lists every workout: tap one to change its date, time, length or calories, ✕ to delete it (programme progress is rolled back too), or **+ Log a workout** you forgot. Deleting a workout, task, food, calendar item, routine, fast or focus session shows an **Undo** button for a few seconds. A fast started by mistake can be cancelled without saving; past fasts and focus sessions have their own *history* lists.
+
 ## Game: XP, levels and badges
 
 Everything you log earns XP: workouts (more for longer workouts and programme sessions), Strava activities, habits, food and water days, focus sessions, fasts and finished tasks/cards. Your level and title (Rookie → Mover → … → Legend) show on the Home header and at the top of *My workout*, together with 147 badges in bronze, silver, gold and epic — from *First sweat* and *Early bird* to *Habit master* and *Iron will*. New badges and level-ups pop up with a little celebration; the 🏆 button shows all badges with your progress.
@@ -110,7 +116,7 @@ Pick *Seasonal (auto)* in *Settings → Colour scheme* to follow the seasons (au
 
 ## Updates
 
-*Settings → Phone app* shows the **app version** (now v15) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
+*Settings → Phone app* shows the **app version** (now v16) and a **↻ Check for update** button. After a push it takes GitHub Pages a minute or two to publish, and up to 10 minutes before every device sees the new files; the button fetches a fresh copy straight away.
 
 ## Install it as an app on your phone
 

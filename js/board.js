@@ -262,7 +262,7 @@
   function md(text, interactive) {
     let n = -1;
     return esc(text).split('\n').map((line) => {
-      let l = line;
+      const l = line;
       const box = l.match(/^\s*- \[( |x)\] (.*)$/i);
       if (box) { n++; return `<label class="md-check"><input type="checkbox" ${box[1].toLowerCase() === 'x' ? 'checked' : ''} ${interactive ? `data-chk="${n}"` : 'disabled'}><span>${inline(box[2])}</span></label>`; }
       if (/^#{1,3} /.test(l)) return `<b class="md-h">${inline(l.replace(/^#{1,3} /, ''))}</b>`;

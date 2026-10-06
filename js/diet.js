@@ -272,9 +272,12 @@
         </div>`;
       }).join('')}`;
     $$('[data-del]', el).forEach((b) => (b.onclick = () => {
-      const d = D(); d.log[day] = entries(day).filter((e) => e.id !== b.dataset.del);
-      if (!d.log[day].length) delete d.log[day];
-      store.save('diet'); renderLive();
+      PD.undoable(['diet'], 'Food removed', () => {
+        const d = D(); d.log[day] = entries(day).filter((e) => e.id !== b.dataset.del);
+        if (!d.log[day].length) delete d.log[day];
+        store.save('diet');
+      });
+      renderLive();
     }));
     $$('[data-copy]', el).forEach((b) => (b.onclick = () => {
       const d = D();

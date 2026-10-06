@@ -328,6 +328,12 @@
     setTimeout(() => { layer.remove(); say('Hehe, sorry. Cleaned it up for you 🧽', 2400); }, 5600);
   }
 
+  /** Blink every few seconds (a short animation instead of one that runs all the time). */
+  function blink() {
+    if (!document.hidden && !wrap.classList.contains('sleep')) play('blink', 220);
+    setTimeout(blink, 2500 + Math.random() * 4500);
+  }
+
   function mood() {
     const h = new Date().getHours();
     wrap?.classList.toggle('sleep', (h >= 23 || h < 6) && Date.now() > wokeUntil);
@@ -368,14 +374,23 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && wrap.classList.contains('open')) close(); });
     window.addEventListener('hashchange', () => { close(); dig(); });
     // eyes follow the pointer (computers)
+    // eyes follow the pointer (computers): at most once per frame, using a cached position
+    let rect = null; let pending = null;
+    const look = () => {
+      const e = pending; pending = null;
+      const eyes = $('.m-look', wrap); if (!eyes) return;
+      rect = rect || $('.mole-btn', wrap).getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2); const dy = e.clientY - (rect.top + rect.height * 0.45);
+      const d = Math.max(Math.hypot(dx, dy), 1);
+      eyes.style.transform = `translate(${((dx / d) * 1.8).toFixed(1)}px, ${((dy / d) * 1.4).toFixed(1)}px)`;
+    };
     document.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse' || PD.fx.reduce()) return;
-      const eyes = $('.m-look', wrap); if (!eyes) return;
-      const r = wrap.querySelector('.mole-btn').getBoundingClientRect();
-      const dx = e.clientX - (r.left + r.width / 2); const dy = e.clientY - (r.top + r.height * 0.45);
-      const d = Math.max(Math.hypot(dx, dy), 1);
-      eyes.style.transform = `translate(${(dx / d) * 1.8}px, ${(dy / d) * 1.4}px)`;
+      if (!pending) requestAnimationFrame(look);
+      pending = e;
     }, { passive: true });
+    window.addEventListener('resize', () => { rect = null; });
+    blink();
     mood(); setInterval(mood, 60e3);
     greet();
     burrow.t = setTimeout(burrow, 25e3 + Math.random() * 30e3);

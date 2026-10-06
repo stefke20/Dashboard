@@ -12,13 +12,15 @@
     f.active = { start: atIso || new Date().toISOString(), goal: f.goal };
     store.save('fasting'); PD.haptic?.(20); PD.reminders?.ask?.();
   }
-  function end() {
+  function end(quiet) {
     const f = F(); const a = f.active;
     if (!a) return;
     const hours = (Date.now() - new Date(a.start)) / 3600e3;
     f.history = [...(f.history || []), { id: PD.uid(), start: a.start, end: new Date().toISOString(), goal: a.goal }].slice(-120);
     f.active = null; store.save('fasting');
-    if (hours >= a.goal) { PD.fx.confetti(); PD.toast(`Fast complete: ${hours.toFixed(1)} h 🎉`); } else PD.toast(`Fast ended after ${hours.toFixed(1)} h`);
+    if (hours >= a.goal) PD.fx.confetti();
+    if (!quiet) PD.toast(hours >= a.goal ? `Fast complete: ${hours.toFixed(1)} h 🎉` : `Fast ended after ${hours.toFixed(1)} h`);
+    return hours;
   }
 
   function card(el) {
@@ -41,10 +43,14 @@
             <span class="muted small">Started ${esc(PD.relDay(PD.keyOf(new Date(a.start))).toLowerCase())} at ${fmt.time(new Date(a.start))}</span>
             <span class="small">${h >= a.goal ? '✅ Goal reached — end whenever you like.' : `Goal at <b>${fmt.time(goalAt)}</b>${PD.keyOf(goalAt) !== PD.todayKey() ? ` ${esc(PD.relDay(PD.keyOf(goalAt)).toLowerCase())}` : ''} · ${hm(goalAt - Date.now())} to go`}</span>
             <div class="fast-stages">${STAGES.slice(0, 4).map(([t, n]) => `<i class="${h >= t ? 'on' : ''}" title="${t} h+: ${n}"></i>`).join('')}</div>
-            <button class="btn" id="fastEnd">End fast</button>
+            <div class="row gap"><button class="btn" id="fastEnd">End fast</button><button class="btn ghost" id="fastCancel" title="Started by mistake? Remove it without saving">Cancel</button></div>
           </div>
         </div>`;
-      $('#fastEnd', el).onclick = () => { end(); card(el); };
+      $('#fastEnd', el).onclick = () => {
+        const h = (Date.now() - new Date(a.start)) / 3600e3;
+        PD.undoable(['fasting'], h >= a.goal ? `Fast complete: ${h.toFixed(1)} h 🎉` : `Fast ended after ${h.toFixed(1)} h`, () => end(true)); card(el);
+      };
+      $('#fastCancel', el).onclick = () => { PD.undoable(['fasting'], 'Fast cancelled — not saved', () => { F().active = null; store.save('fasting'); }); card(el); };
     } else {
       el.innerHTML = `
         <div class="card-head"><h2>Fasting</h2><span class="muted small">intermittent fasting timer</span></div>
@@ -53,11 +59,12 @@
           <button class="btn" id="fastStart">▶ Start ${f.goal}-hour fast</button>
           <label class="small muted row gap">or started at <input type="time" id="fastAt" style="width:auto"></label>
         </div>
-        ${hist.length ? `<h3 class="sub">Recent fasts</h3><div class="fast-hist">${hist.map((x) => {
+        ${hist.length ? `<h3 class="sub row gap">Recent fasts <span class="spacer"></span><button class="link small" id="fastHist">history &amp; delete ›</button></h3><div class="fast-hist">${hist.map((x) => {
           const hrs = (new Date(x.end) - new Date(x.start)) / 3600e3;
           return `<div title="${esc(fmt.short(new Date(x.start)))}: ${hrs.toFixed(1)} h (goal ${x.goal} h)"><i style="height:${Math.min(hrs / 24, 1) * 100}%" class="${hrs >= x.goal ? 'ok' : ''}"></i><span>${esc(fmt.weekday(new Date(x.end)).slice(0, 2))}</span></div>`;
         }).join('')}</div>` : '<p class="muted small">Popular: 16:8 — fast 16 hours (e.g. 20:00 → 12:00), eat within 8.</p>'}`;
       $$('[data-goal]', el).forEach((b) => (b.onclick = () => { f.goal = +b.dataset.goal; store.save('fasting'); card(el); }));
+      const hb = $('#fastHist', el); if (hb) hb.onclick = () => history(el);
       $('#fastStart', el).onclick = () => {
         const t = $('#fastAt', el).value;
         let at;
@@ -67,7 +74,25 @@
     }
   }
 
+  /** All fasts, newest first, each removable (with Undo). */
+  function history(cardEl) {
+    const draw = (body) => {
+      const list = (F().history || []).slice().reverse();
+      body.innerHTML = list.length ? `<ul class="sessions">${list.map((x) => {
+        const hrs = (new Date(x.end) - new Date(x.start)) / 3600e3;
+        return `<li><span class="act-icon" aria-hidden="true">${hrs >= x.goal ? '✅' : '⏳'}</span>
+          <span class="act-main"><b>${hrs.toFixed(1)} h</b><span class="muted small">${esc(fmt.short(new Date(x.start)))} ${fmt.time(new Date(x.start))} → ${esc(fmt.short(new Date(x.end)))} ${fmt.time(new Date(x.end))} · goal ${x.goal} h</span></span>
+          <button class="icon-btn sm ghost" data-del="${esc(x.id)}" aria-label="Delete fast"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`;
+      }).join('')}</ul>` : '<p class="empty">No fasts yet.</p>';
+      $$('[data-del]', body).forEach((b) => (b.onclick = () => {
+        PD.undoable(['fasting'], 'Fast deleted', () => { const f = F(); f.history = f.history.filter((x) => x.id !== b.dataset.del); store.save('fasting'); });
+        draw(body); if (cardEl) card(cardEl);
+      }));
+    };
+    PD.modal('⏳ Fasting history', '', draw);
+  }
+
   setInterval(() => { const el = $('#fastCard'); if (el && F().active && !document.hidden) card(el); }, 30e3);
 
-  PD.fasting = { card, start, end };
+  PD.fasting = { card, start, end, history };
 })(window.PD);

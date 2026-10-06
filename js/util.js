@@ -33,13 +33,21 @@ window.PD = window.PD || {};
   };
   const startOfWeek = (d) => { const x = new Date(d); const wd = (x.getDay() + 6) % 7; x.setDate(x.getDate() - wd); x.setHours(0, 0, 0, 0); return x; };
 
+  // Intl formatters are slow to create, so make each kind once and reuse it
+  const formatters = new Map();
+  const cached = (Kind, opts) => {
+    const key = Kind.name + JSON.stringify(opts);
+    if (!formatters.has(key)) formatters.set(key, new Kind(LOCALE, opts));
+    return formatters.get(key);
+  };
+  const dateFmt = (opts) => cached(Intl.DateTimeFormat, opts);
   const fmt = {
-    date: (d, opts) => new Intl.DateTimeFormat(LOCALE, opts || { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d),
-    short: (d) => new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric', month: 'short' }).format(d),
-    dayMonth: (d) => new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short' }).format(d),
-    weekday: (d, style = 'short') => new Intl.DateTimeFormat(LOCALE, { weekday: style }).format(d),
-    time: (d) => new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' }).format(d),
-    num: (n, digits = 0) => Number(n || 0).toLocaleString(LOCALE, { maximumFractionDigits: digits, minimumFractionDigits: digits }),
+    date: (d, opts) => dateFmt(opts || { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d),
+    short: (d) => dateFmt({ weekday: 'short', day: 'numeric', month: 'short' }).format(d),
+    dayMonth: (d) => dateFmt({ day: 'numeric', month: 'short' }).format(d),
+    weekday: (d, style = 'short') => dateFmt({ weekday: style }).format(d),
+    time: (d) => dateFmt({ hour: '2-digit', minute: '2-digit' }).format(d),
+    num: (n, digits = 0) => cached(Intl.NumberFormat, { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(Number(n || 0)),
     duration: (sec) => {
       const h = Math.floor(sec / 3600); const m = Math.round((sec % 3600) / 60);
       return h ? `${h}h ${pad(m)}m` : `${m}m`;
@@ -84,12 +92,32 @@ window.PD = window.PD || {};
 
   /* ---------- UI bits ---------- */
   let toastTimer;
-  function toast(msg) {
+  /** Short message at the bottom; optionally with one action button (e.g. Undo). */
+  function toast(msg, { action, onAction, ms } = {}) {
     const el = $('#toast');
+    // dialogs live in the browser's top layer: put the toast inside an open one so it (and its button) stays on top
+    const host = document.querySelector('dialog[open]') || document.body;
+    if (el.parentElement !== host) host.appendChild(el);
     el.textContent = msg; el.hidden = false;
+    if (action) {
+      const b = document.createElement('button'); b.className = 'toast-action'; b.textContent = action;
+      b.onclick = () => { hide(); onAction?.(); };
+      el.append(' ', b);
+    }
     requestAnimationFrame(() => el.classList.add('show'));
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.classList.remove('show'); setTimeout(() => (el.hidden = true), 250); }, 2600);
+    const hide = () => { clearTimeout(toastTimer); el.classList.remove('show'); setTimeout(() => (el.hidden = true), 250); };
+    toastTimer = setTimeout(hide, ms || (action ? 6000 : 2600));
+  }
+
+  /** Make a change that can be undone: snapshot the data keys, apply the change, offer Undo for a few seconds. */
+  function undoable(keys, msg, change) {
+    const before = keys.map((k) => structuredClone(PD.store.get(k)));
+    change();
+    toast(msg, {
+      action: 'Undo',
+      onAction: () => { keys.forEach((k, i) => PD.store.set(k, before[i])); PD.app.renderCurrent(); toast('Restored ↩️'); },
+    });
   }
 
   function modal(title, html, onMount, cls = '') {
@@ -165,7 +193,7 @@ window.PD = window.PD || {};
 
   Object.assign(PD, { gcalLink,
     esc, $, $$, uid, pad, keyOf, todayKey, parseKey, addDays, shiftKey, daysBetween, lastNDays,
-    isoWeek, startOfWeek, fmt, relDay, fetchJSON, fetchText, toast, modal, ring, download, readFile,
+    isoWeek, startOfWeek, fmt, relDay, fetchJSON, fetchText, toast, undoable, modal, ring, download, readFile,
     parseCSV, debounce, norm,
   });
 })(window.PD);

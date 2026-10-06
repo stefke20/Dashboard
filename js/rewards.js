@@ -1,7 +1,7 @@
 /* Badge rewards: every achievement unlocks something to customise the dashboard —
    site themes, celebration styles, header effects, workout player skins, cursor trails and level medal frames. */
 (function (PD) {
-  const { esc, $, $$, store } = PD;
+  const { esc, $$, store } = PD;
   const G = () => store.get('game');
 
   const TYPES = {
@@ -172,7 +172,7 @@
     ['rose', 'theme', 'Rose', 'col-50', ['#c2255c', '#f06595', '#ffc9c9']],
     ['curator', 'title', 'Curator', 'col-75', '🏺'],
     ['keymaster', 'title', 'Keymaster', 'col-100', '🗝️'],
-  ].map(([id, type, name, badge, preview]) => ({ key: `${type}:${id}`, id, type, name, badge, preview }));
+  ].map(([id, type, name, badge, look]) => ({ key: `${type}:${id}`, id, type, name, badge, preview: look }));
 
   const badgeOf = (r) => PD.game.state().badges.find((b) => b.id === r.badge);
   const isUnlocked = (r) => !!G().unlocked[r.badge];

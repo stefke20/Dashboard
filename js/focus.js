@@ -1,7 +1,7 @@
 /* Focus timer (Pomodoro): work / break cycles linked to your tasks.
    The running timer lives on this device (survives reloads); finished sessions are synced. */
 (function (PD) {
-  const { esc, $, $$, fmt, store, todayKey } = PD;
+  const { esc, $, $$, store, todayKey } = PD;
   const RUN = 'pd.focus.run';
   const F = () => store.get('focus');
 
@@ -52,7 +52,7 @@
     const tasks = store.get('tasks').filter((t) => !t.done);
     const mode = run?.mode || 'work';
     el.innerHTML = `
-      <div class="card-head"><h2>Focus</h2><span class="muted small">${today.length ? `${'🍅'.repeat(Math.min(today.length, 8))} ${mins} min today` : 'No sessions yet today'}</span></div>
+      <div class="card-head"><h2>Focus</h2>${today.length ? `<button class="link small" id="focusHist" title="See or delete sessions">${'🍅'.repeat(Math.min(today.length, 8))} ${mins} min today ›</button>` : '<span class="muted small">No sessions yet today</span>'}</div>
       <div class="focus ${mode}">
         <div class="focus-ring">
           <svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="${R}" class="track"/><circle cx="80" cy="80" r="${R}" class="prog" id="focusProg" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
@@ -68,6 +68,7 @@
       </div>`;
     $$('[data-len]', el).forEach((b) => (b.onclick = () => { f.work = +b.dataset.len; store.save('focus'); if (!run) reset(); card(el); }));
     $('#focusLabel', el).onchange = (e) => { if (run) { run.label = e.target.value.trim(); persist(); } };
+    const fh = $('#focusHist', el); if (fh) fh.onclick = () => history(el);
     buttons(); tick(true);
   }
 
@@ -111,5 +112,22 @@
   }
   setInterval(() => tick(false), 1000);
 
-  PD.focus = { card, start, pause, resume, reset, running: () => run, tick };
+  /** Focus sessions of the last two weeks, each removable (with Undo). */
+  function history(cardEl) {
+    const draw = (body) => {
+      const from = PD.shiftKey(todayKey(), -13);
+      const list = F().sessions.filter((x) => x.date >= from).slice().reverse();
+      body.innerHTML = list.length ? `<ul class="sessions">${list.map((x) => `<li><span class="act-icon" aria-hidden="true">🍅</span>
+          <span class="act-main"><b>${x.minutes} min${x.label ? ` · ${esc(x.label)}` : ''}</b><span class="muted small">${esc(PD.relDay(x.date))} · ${PD.fmt.time(new Date(x.start))}</span></span>
+          <button class="icon-btn sm ghost" data-del="${esc(x.id)}" aria-label="Delete session"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`).join('')}</ul>`
+        : '<p class="empty">No focus sessions in the last two weeks.</p>';
+      $$('[data-del]', body).forEach((b) => (b.onclick = () => {
+        PD.undoable(['focus'], 'Focus session deleted', () => { const f = F(); f.sessions = f.sessions.filter((x) => x.id !== b.dataset.del); store.save('focus'); });
+        draw(body); if (cardEl) card(cardEl);
+      }));
+    };
+    PD.modal('🍅 Focus sessions', '', draw);
+  }
+
+  PD.focus = { card, start, pause, resume, reset, running: () => run, tick, history };
 })(window.PD);

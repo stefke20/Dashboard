@@ -16,7 +16,7 @@
     const el = $(`#page-${page}`);
     PAGES[page].render();
     PD.fx.enter(el); PD.fx.countUp(el);
-    moveIndicator();
+    requestAnimationFrame(moveIndicator); // measure after the new page is laid out, not mid-render
     window.scrollTo({ top: 0 });
   }
 
@@ -89,7 +89,7 @@
   if (standalone()) document.documentElement.classList.add('standalone');
 
   PD.pwa = {
-    version: 'v15', // keep in sync with VERSION in sw.js
+    version: 'v16', // keep in sync with VERSION in sw.js
     /** Ask the service worker for a fresh copy of the app, then reload. */
     async update() {
       try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch { /* offline */ }

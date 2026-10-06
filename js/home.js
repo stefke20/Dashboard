@@ -244,7 +244,7 @@
       store.save('tasks'); renderTasks();
     }));
     $$('[data-del]', el).forEach((b) => (b.onclick = () => {
-      store.set('tasks', tasks.filter((x) => x.id !== b.dataset.del)); renderTasks();
+      PD.undoable(['tasks'], 'Task deleted', () => store.set('tasks', tasks.filter((x) => x.id !== b.dataset.del))); renderTasks();
     }));
   }
 
@@ -329,6 +329,7 @@
     const daysInYear = ((now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || now.getFullYear() % 400 === 0) ? 366 : 365;
     const m = PD.daily.moon(now);
     el.innerHTML = `
+      <div class="hero-bg" aria-hidden="true"></div>
       <div class="hero-actions">
         <button class="hero-btn" id="heroSpeak" title="Read my briefing aloud" aria-label="Read my briefing aloud"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
         <button class="hero-btn" id="heroReview" title="Your week in review" aria-label="Your week in review"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></button>

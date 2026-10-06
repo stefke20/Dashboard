@@ -1,6 +1,6 @@
 /* Feel-good details: haptics, swipe between tabs, pull-to-refresh, offline indicator, keyboard shortcuts. */
 (function (PD) {
-  const { $, $$ } = PD;
+  const { $ } = PD;
   const TABS = ['home', 'health', 'workout', 'board', 'calendar', 'diet'];
 
   PD.haptic = (ms = 12) => { try { if (PD.store.get('settings').haptics !== false) navigator.vibrate?.(ms); } catch { /* ignore */ } };
